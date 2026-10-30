@@ -58,7 +58,8 @@ Feature: Add a question requiring more than one file upload questions in a quest
     And I should see "Thank you for completing this Questionnaire"
     And I press "Continue"
     And I should see "View your response(s)"
-    And ".resourcecontent.resourcepdf" "css_element" should exist
+    And "testfilequestion.pdf" "link" should exist
+    And "testfilequestion2.pdf" "link" should exist
     And I log out
     And I log in as "teacher1"
     And I am on the "Test questionnaire multiple files" "questionnaire activity" page

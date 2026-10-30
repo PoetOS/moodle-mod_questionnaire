@@ -65,7 +65,7 @@ final class restore_response_file_test extends \advanced_testcase {
             'filearea' => 'draft',
             'itemid' => $draftitemid,
             'filepath' => '/',
-            'filename' => 'answer.txt',
+            'filename' => 'answer.pdf',
         ], 'answer');
         $oldrecordid = $question->insert_response((object)['rid' => $rid, 'q' . $question->id() => $draftitemid]);
         $this->setAdminUser();
@@ -108,6 +108,6 @@ final class restore_response_file_test extends \advanced_testcase {
         $this->assertEquals($newcontext->id, $file->get_contextid());
         $this->assertEquals('response_file', $file->get_filearea());
         $this->assertEquals($newrecord->id, $file->get_itemid());
-        $this->assertSame('answer.txt', $file->get_filename());
+        $this->assertSame('answer.pdf', $file->get_filename());
     }
 }

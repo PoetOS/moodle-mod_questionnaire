@@ -53,7 +53,8 @@ class file extends responsetype {
     }
 
     /**
-     * Return the uploaded file in the current user's draft area with the given item id, if there is one.
+     * Return the uploaded file in the current user's draft area with the given item id, if there is one of an
+     * accepted type.
      *
      * @param int $draftitemid
      * @return \stored_file|null
@@ -71,7 +72,12 @@ class file extends responsetype {
             'itemid, filepath, filename',
             false
         );
-        return empty($files) ? null : reset($files);
+        foreach ($files as $file) {
+            if (\mod_questionnaire\local\question\file::allowed_file_name($file->get_filename())) {
+                return $file;
+            }
+        }
+        return null;
     }
 
     /**
@@ -193,20 +199,15 @@ class file extends responsetype {
         $rec->create();
         $recordid = (int)$rec->get('id');
 
-        file_save_draft_area_files(
-            $draftfile->get_itemid(),
-            $contextid,
-            'mod_questionnaire',
-            'response_file',
-            $recordid,
-            \mod_questionnaire\local\question\file::get_file_manager_option()
-        );
-        $files = get_file_storage()->get_area_files($contextid, 'mod_questionnaire', 'response_file', $recordid, 'id', false);
-        if (empty($files)) {
-            $rec->delete();
-            return false;
-        }
-        $rec->set('fileid', reset($files)->get_id());
+        // Save only the checked file, not whatever else is in the draft area.
+        $file = get_file_storage()->create_file_from_storedfile([
+            'contextid' => $contextid,
+            'component' => 'mod_questionnaire',
+            'filearea' => 'response_file',
+            'itemid' => $recordid,
+            'filepath' => '/',
+        ], $draftfile);
+        $rec->set('fileid', $file->get_id());
         $rec->update();
         return $recordid;
     }

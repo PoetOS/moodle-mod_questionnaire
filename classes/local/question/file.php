@@ -15,7 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\local\question;
-use core_media_manager;
 use form_filemanager;
 use mod_questionnaire\local\response\response;
 use moodle_url;
@@ -129,6 +128,48 @@ class file extends question {
     }
 
     /**
+     * Check question's form data for valid response: every uploaded file must be one of the accepted types.
+     *
+     * The file manager only limits the types in the browser, so this is the server-side check.
+     *
+     * @param \stdClass $responsedata The data entered into the response.
+     * @return bool
+     */
+    public function response_valid($responsedata) {
+        global $USER;
+        if (is_a($responsedata, response::class) || empty($responsedata->{'q' . $this->id()})) {
+            return parent::response_valid($responsedata);
+        }
+        $files = get_file_storage()->get_area_files(
+            \context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            (int)$responsedata->{'q' . $this->id()},
+            'id',
+            false
+        );
+        foreach ($files as $file) {
+            if (!self::allowed_file_name($file->get_filename())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * True if a file with this name is one of the types the question accepts.
+     *
+     * @param string $filename
+     * @return bool
+     */
+    public static function allowed_file_name(string $filename): bool {
+        return (new \core_form\filetypes_util())->is_allowed_file_type(
+            $filename,
+            self::get_file_manager_option()['accepted_types']
+        );
+    }
+
+    /**
      * Get file manager options, here allow only one image or pdf file, without
      * creating subdirectories.
      *
@@ -145,13 +186,13 @@ class file extends question {
     }
 
     /**
-     * Response display output, e.g. render the file image/pdf or show a linkt to download it.
+     * Response display output: show an uploaded image, or a link to download any other file.
      *
      * @param \stdClass $data
      * @return string
      */
     protected function response_survey_display($data) {
-        global $PAGE, $CFG;
+        global $CFG;
         require_once($CFG->libdir . '/filelib.php');
         require_once($CFG->libdir . '/resourcelib.php');
         if (isset($data->answers[$this->id()])) {
@@ -174,25 +215,12 @@ class file extends question {
                 $file->get_filename()
             );
 
-            $mimetype = $file->get_mimetype();
-            $title = '';
-
-            $mediamanager = core_media_manager::instance($PAGE);
-            $embedoptions = [
-                core_media_manager::OPTION_TRUSTED => true,
-                core_media_manager::OPTION_BLOCK => true,
-            ];
-
-            if (file_mimetype_in_typegroup($mimetype, 'web_image')) {  // It's an image.
-                $code = resourcelib_embed_image($moodleurl->out(), $title);
-            } else if ($mimetype === 'application/pdf') { // PDF document.
-                $code = resourcelib_embed_pdf($moodleurl->out(), $title, get_string('view'));
-            } else if ($mediamanager->can_embed_url($moodleurl, $embedoptions)) { // Media (audio/video) file.
-                $code = $mediamanager->embed_url($moodleurl, $title, 0, 0, $embedoptions);
-            } else { // We need a way to discover if we are loading remote docs inside an iframe.
-                $moodleurl->param('embed', 1);
-                // Anything else - just try object tag enlarged as much as possible.
-                $code = resourcelib_embed_general($moodleurl, $title, get_string('view'), $mimetype);
+            // Response files are always downloaded, so only images can be shown in the page. Anything else is
+            // offered as a download link rather than embedded.
+            if (file_mimetype_in_typegroup($file->get_mimetype(), 'web_image')) {
+                $code = resourcelib_embed_image($moodleurl->out(), '');
+            } else {
+                $code = \html_writer::link(new moodle_url($moodleurl, ['forcedownload' => 1]), s($file->get_filename()));
             }
         }
         return '<div class="response text">' . $code . '</div>';
