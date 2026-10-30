@@ -328,6 +328,11 @@ class capabilities {
                 return false;
             }
 
+            // Another user's complete response also needs the capability to view individual responses.
+            if ($response->userid != $USER->id && !$this->can_view_single_response()) {
+                return false;
+            }
+
             // Can always view if you have the unrestricted capability.
             if (has_capability('mod/questionnaire:readallresponseanytime', $context)) {
                 return true;

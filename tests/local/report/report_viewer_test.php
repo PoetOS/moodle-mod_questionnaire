@@ -223,4 +223,42 @@ final class report_viewer_test extends \advanced_testcase {
             $this->default_responsestatus()
         );
     }
+
+    /**
+     * view_individual_response() throws nopermissions for a student who may see response summaries but lacks the
+     * capability to view individual responses, even for the list of respondents.
+     */
+    public function test_view_individual_response_requires_viewsingleresponse(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $questionnaire = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_instance([
+            'course' => $course->id,
+            'respview' => questionnaire::RESPVIEW_ALWAYS,
+        ]);
+        $PAGE->set_context($questionnaire->context());
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        $this->setUser($student);
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        $this->assertTrue($questionnaire->capabilities()->can_view_all_responses(null, true));
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessageMatches('/permission|nopermissions/i');
+        (new report_viewer($questionnaire, $renderer))->view_individual_response(
+            page::report(),
+            'html',
+            new \moodle_url('/mod/questionnaire/report.php'),
+            0,
+            0,
+            [],
+            false,
+            true,
+            false,
+            '0',
+            $this->default_responsestatus()
+        );
+    }
 }
