@@ -236,11 +236,14 @@ final class question_manager_test extends \advanced_testcase {
      * time-of-permanent-deletion countdown message instead of the disabled-bin message.
      */
     public function test_export_recyclebin_shows_countdown_when_duration_set(): void {
+        global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
         set_config('questiondeletionduration', WEEKSECS, 'questionnaire');
         [$questionnaire, $qid] = $this->build_questionnaire_with_question();
         $questionnaire->survey()->soft_delete_question($qid, $questionnaire->id());
+        $deleted = make_timestamp(2026, 10, 1, 12);
+        $DB->set_field('questionnaire_question', 'deleted', $deleted, ['id' => $qid]);
         $questionnaire = questionnaire::from_instanceid($questionnaire->id());
 
         $manager = new question_manager($questionnaire);
@@ -248,7 +251,15 @@ final class question_manager_test extends \advanced_testcase {
 
         $row = $data->recyclebin->rows[0];
         $this->assertStringNotContainsString(get_string('recylebindisabled', 'questionnaire'), $row['timedeletedhtml']);
-        $this->assertStringContainsString('timedeletednext7days', $row['timedeletedhtml']);
+        $this->assertSame(
+            get_string(
+                'timedeletednext7days',
+                'questionnaire',
+                userdate($deleted + WEEKSECS, get_string('strftimedaydate', 'langconfig'))
+            ),
+            $row['timedeletedhtml']
+        );
+        $this->assertStringNotContainsString((string)WEEKSECS, $row['timedeletedhtml']);
     }
 
     /**

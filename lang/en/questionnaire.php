@@ -717,7 +717,7 @@ $string['thismonth'] = 'this month';
 $string['thisresponse'] = 'This response';
 $string['thisweek'] = 'this week';
 $string['thousands'] = 'Do not use thousands separators.';
-$string['timedeletednext7days'] = '<span class="timedeletednext7days">Time of permanent deletion: night of {$a}</strong>';
+$string['timedeletednext7days'] = '<span class="timedeletednext7days">Time of permanent deletion: night of {$a}</span>';
 $string['title'] = 'Title';
 $string['title_help'] = 'Title of this questionnaire, which will appear at the top of every page. By default Title is set to the questionnaire Name, but you can edit it as you like.';
 $string['today'] = 'today';
