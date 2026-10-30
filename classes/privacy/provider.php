@@ -23,6 +23,7 @@ use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\writer;
 use mod_questionnaire\local\db\response_file_record;
+use mod_questionnaire\local\db\response_record;
 use mod_questionnaire\questionnaire;
 
 /**
@@ -257,12 +258,7 @@ class provider implements
             return;
         }
 
-        $questionnaire = questionnaire::from_cm(\cm_info::create($cmrecord));
-        $qresponses = $questionnaire->responses();
-        $responses = $qresponses->get_responses();
-        foreach ($responses as $response) {
-            $qresponses->delete_response($response);
-        }
+        self::delete_responses(questionnaire::from_cm(\cm_info::create($cmrecord)));
     }
 
     /**
@@ -284,12 +280,7 @@ class provider implements
                 continue;
             }
 
-            $questionnaire = questionnaire::from_cm(\cm_info::create($cmrecord));
-            $qresponses = $questionnaire->responses();
-            $responses = $qresponses->get_responses($userid);
-            foreach ($responses as $response) {
-                $qresponses->delete_response($response);
-            }
+            self::delete_responses(questionnaire::from_cm(\cm_info::create($cmrecord)), (int)$userid);
         }
     }
 
@@ -306,12 +297,27 @@ class provider implements
         }
 
         $questionnaire = questionnaire::from_cm(\cm_info::create($cmrecord));
-        $qresponses = $questionnaire->responses();
         foreach ($userlist->get_userids() as $userid) {
-            $responses = $qresponses->get_responses($userid);
-            foreach ($responses as $response) {
-                $qresponses->delete_response($response);
-            }
+            self::delete_responses($questionnaire, (int)$userid);
+        }
+    }
+
+    /**
+     * Delete this questionnaire's responses, complete or not, optionally only those of one user.
+     *
+     * Responses are selected by questionnaire, so a public survey's owner never reaches other courses' responses.
+     *
+     * @param questionnaire $questionnaire
+     * @param int|null $userid
+     */
+    protected static function delete_responses(questionnaire $questionnaire, ?int $userid = null): void {
+        $conditions = ['questionnaireid' => $questionnaire->id()];
+        if ($userid !== null) {
+            $conditions['userid'] = $userid;
+        }
+        $qresponses = $questionnaire->responses();
+        foreach (response_record::get_records($conditions, 'id') as $record) {
+            $qresponses->delete_response($record->to_record());
         }
     }
 
