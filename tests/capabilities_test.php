@@ -720,4 +720,47 @@ final class capabilities_test extends \advanced_testcase {
         $user = $qdg->create_instance(['course' => $dg->create_course()->id, 'create' => 'public-' . $owner->surveyid()]);
         return [questionnaire::from_instanceid($owner->id()), questionnaire::from_instanceid($user->id())];
     }
+
+    /**
+     * In separate groups, staff without access to all groups may only filter by their own groups; any group must
+     * belong to the course.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_group
+     */
+    public function test_can_view_group(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course, $groupa] = $this->make_group_responses(SEPARATEGROUPS);
+        $groupb = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $othergroup = $this->getDataGenerator()->create_group(['courseid' => $this->getDataGenerator()->create_course()->id]);
+
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'teacher');
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $teacher->id]);
+        $this->setUser($teacher);
+        $capabilities = $questionnaire->capabilities();
+        $this->assertTrue($capabilities->can_view_group(0));
+        $this->assertTrue($capabilities->can_view_group((int)$groupa->id));
+        $this->assertFalse($capabilities->can_view_group((int)$groupb->id));
+        $this->assertFalse($capabilities->can_view_group((int)$othergroup->id));
+        $this->assertFalse($capabilities->can_view_group(999999));
+
+        $this->setUser($this->getDataGenerator()->create_and_enrol($course, 'editingteacher'));
+        $this->assertTrue($capabilities->can_view_group((int)$groupb->id));
+        $this->assertFalse($capabilities->can_view_group((int)$othergroup->id));
+    }
+
+    /**
+     * In visible groups, any group of the course may be used as a filter.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_group
+     */
+    public function test_can_view_group_visible_groups(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course, $groupa] = $this->make_group_responses(VISIBLEGROUPS);
+        $groupb = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'teacher');
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $teacher->id]);
+        $this->setUser($teacher);
+        $this->assertTrue($questionnaire->capabilities()->can_view_group((int)$groupb->id));
+    }
 }
