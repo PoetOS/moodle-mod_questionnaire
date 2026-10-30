@@ -58,12 +58,8 @@ if ($id) {
     if (!$course = $DB->get_record('course', ['id' => $survey->owning_courseid()])) {
         throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
     }
-    $cm = !empty($qid) ? get_coursemodule_from_instance('questionnaire', $qid, $course->id) : false;
-    if ($cm) {
-        $questionnaire = questionnaire_class::from_cmid($cm->id);
-    } else {
-        $questionnaire = questionnaire_class::from_survey($sid, $course);
-    }
+    $questionnaire = questionnaire_class::for_survey_preview($sid, $qid, $course);
+    $cm = $questionnaire->coursemodule() ?: false;
 }
 $context = $cm ? context_module::instance($cm->id) : false;
 

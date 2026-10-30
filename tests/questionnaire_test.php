@@ -726,4 +726,29 @@ final class questionnaire_test extends \advanced_testcase {
         set_config('questiondeletionduration', 7 * DAYSECS, 'questionnaire');
         $this->assertEquals(7 * DAYSECS, survey::question_deletion_duration());
     }
+
+    /**
+     * Survey preview uses the named questionnaire only when it uses the survey, and a survey-only instance
+     * without one.
+     *
+     * @covers \mod_questionnaire\questionnaire::for_survey_preview
+     */
+    public function test_for_survey_preview(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $qdg = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $template = $qdg->create_instance(['course' => $course->id]);
+        $private = $qdg->create_instance(['course' => $course->id]);
+
+        $preview = questionnaire::for_survey_preview($template->surveyid(), $template->id(), $course);
+        $this->assertSame($template->id(), $preview->id());
+
+        $surveyonly = questionnaire::for_survey_preview($template->surveyid(), 0, $course);
+        $this->assertSame(0, $surveyonly->id());
+        $this->assertSame($template->surveyid(), $surveyonly->surveyid());
+
+        $this->expectException(\moodle_exception::class);
+        questionnaire::for_survey_preview($template->surveyid(), $private->id(), $course);
+    }
 }
