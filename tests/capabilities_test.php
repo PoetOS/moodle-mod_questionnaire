@@ -763,4 +763,27 @@ final class capabilities_test extends \advanced_testcase {
         $this->setUser($teacher);
         $this->assertTrue($questionnaire->capabilities()->can_view_group((int)$groupb->id));
     }
+
+    /**
+     * Printing a blank questionnaire needs printblank; printing a response needs permission to view it.
+     *
+     * @covers \mod_questionnaire\capabilities::can_print
+     */
+    public function test_can_print(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$questionnaire, $course, $groupa, $rids, $students] = $this->make_group_responses(NOGROUPS);
+
+        $this->setUser($students['a']);
+        $capabilities = $questionnaire->capabilities();
+        $this->assertTrue($capabilities->can_print(0));
+        $this->assertTrue($capabilities->can_print($rids['a']));
+        $this->assertFalse($capabilities->can_print($rids['b']));
+
+        $studentrole = $DB->get_field('role', 'id', ['shortname' => 'student']);
+        assign_capability('mod/questionnaire:printblank', CAP_PROHIBIT, $studentrole, $questionnaire->context()->id);
+        accesslib_clear_all_caches_for_unit_testing();
+        $this->assertFalse($capabilities->can_print(0));
+        $this->assertTrue($capabilities->can_print($rids['a']));
+    }
 }
