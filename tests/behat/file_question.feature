@@ -40,7 +40,7 @@ Feature: Add a question requiring a file upload in questionnaire.
     And I should see "Thank you for completing this Questionnaire"
     And I press "Continue"
     And I should see "View your response(s)"
-    And ".resourcecontent.resourcepdf" "css_element" should exist
+    And "testfilequestion.pdf" "link" should exist
     And I log out
     And I log in as "teacher1"
     And I am on the "Test questionnaire" "questionnaire activity" page
@@ -71,7 +71,8 @@ Feature: Add a question requiring a file upload in questionnaire.
     And I should see "Thank you for completing this Questionnaire"
     And I press "Continue"
     And I should see "View your response(s)"
-    And ".resourcecontent.resourcepdf" "css_element" should exist
+    And "testfilequestion.pdf" "link" should exist
+    And "testfilequestion2.pdf" "link" should exist
     And I log out
     And I log in as "teacher1"
     And I am on the "Test questionnaire" "questionnaire activity" page
