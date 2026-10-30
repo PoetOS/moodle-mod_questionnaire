@@ -679,4 +679,45 @@ final class capabilities_test extends \advanced_testcase {
         $this->setUser($this->getDataGenerator()->create_and_enrol($course, 'editingteacher'));
         $this->assertFalse($questionnaire->capabilities()->can_view_response($rids['a']));
     }
+
+    /**
+     * Only the course that owns a public survey can edit it; a course using it may not.
+     *
+     * @covers \mod_questionnaire\capabilities::can_edit_survey_questions
+     * @covers \mod_questionnaire\capabilities::can_edit_survey_settings
+     */
+    public function test_can_edit_survey_only_in_owning_course(): void {
+        $this->resetAfterTest();
+        [$owner, $user] = $this->make_shared_public_survey();
+
+        $this->setUser($this->getDataGenerator()->create_and_enrol($owner->course(), 'editingteacher'));
+        $this->assertTrue($owner->capabilities()->can_edit_survey_questions());
+        $this->assertTrue($owner->capabilities()->can_edit_survey_settings());
+
+        $this->setUser($this->getDataGenerator()->create_and_enrol($user->course(), 'editingteacher'));
+        $this->assertTrue($user->capabilities()->can_edit_questions());
+        $this->assertFalse($user->capabilities()->can_edit_survey_questions());
+        $this->assertTrue($user->capabilities()->can_manage_questionnaire());
+        $this->assertFalse($user->capabilities()->can_edit_survey_settings());
+
+        // Without the capability, owning the survey is not enough.
+        $this->setUser($this->getDataGenerator()->create_and_enrol($owner->course(), 'student'));
+        $this->assertFalse($owner->capabilities()->can_edit_survey_questions());
+        $this->assertFalse($owner->capabilities()->can_edit_survey_settings());
+    }
+
+    /**
+     * Make a public survey in one course and a questionnaire in another course that uses it.
+     *
+     * @return questionnaire[] [the owning questionnaire, the questionnaire that uses the survey]
+     */
+    private function make_shared_public_survey(): array {
+        $this->setAdminUser();
+        $dg = $this->getDataGenerator();
+        $qdg = $dg->get_plugin_generator('mod_questionnaire');
+        $owner = $qdg->create_instance(['course' => $dg->create_course()->id]);
+        $qdg->create_content($owner, ['realm' => 'public']);
+        $user = $qdg->create_instance(['course' => $dg->create_course()->id, 'create' => 'public-' . $owner->surveyid()]);
+        return [questionnaire::from_instanceid($owner->id()), questionnaire::from_instanceid($user->id())];
+    }
 }

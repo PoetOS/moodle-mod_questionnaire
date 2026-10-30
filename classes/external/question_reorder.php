@@ -67,6 +67,9 @@ class question_reorder extends external_api {
         require_capability('mod/questionnaire:editquestions', $context);
 
         $questionnaire = questionnaire::from_cmid($cmid);
+        if (!$questionnaire->capabilities()->can_edit_survey_questions()) {
+            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+        }
         $orderedids = array_map('intval', explode(',', trim($itemorder, ',')));
         $result = $questionnaire->survey()->reorder_questions($orderedids);
 

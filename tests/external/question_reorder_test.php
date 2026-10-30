@@ -155,4 +155,21 @@ final class question_reorder_test extends \advanced_testcase {
         $this->assertTrue($result['reload']);
         $this->assertNotSame('', $result['warnings']);
     }
+
+    /**
+     * A course using another course's public survey cannot reorder its questions.
+     */
+    public function test_execute_refuses_survey_owned_by_another_course(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        [$owner, $q1, $q2, $q3] = $this->build_questionnaire_with_questions();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $generator->create_content($owner, ['realm' => 'public']);
+        $course = $this->getDataGenerator()->create_course();
+        $user = $generator->create_instance(['course' => $course->id, 'create' => 'public-' . $owner->surveyid()]);
+        $this->setUser($this->getDataGenerator()->create_and_enrol($course, 'editingteacher'));
+
+        $this->expectException(\moodle_exception::class);
+        question_reorder::execute($user->coursemodule()->id, implode(',', [$q3, $q2, $q1]));
+    }
 }

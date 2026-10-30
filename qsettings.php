@@ -54,7 +54,7 @@ $questionnaire = questionnaire::from_cm($cm);
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 $page = page::settings();
 
-if (!$questionnaire->capabilities()->can_manage_questionnaire()) {
+if (!$questionnaire->capabilities()->can_edit_survey_settings()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 

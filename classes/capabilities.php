@@ -114,6 +114,30 @@ class capabilities {
     }
 
     /**
+     * True if the specified user can edit this questionnaire's survey questions and feedback.
+     *
+     * A questionnaire that uses another course's public survey shares it, so only the owning course may change it.
+     *
+     * @param int|null $userid
+     * @return bool
+     */
+    public function can_edit_survey_questions(?int $userid = null): bool {
+        return $this->can_edit_questions($userid) && $this->questionnaire->is_survey_owner();
+    }
+
+    /**
+     * True if the specified user can edit this questionnaire's survey settings.
+     *
+     * A questionnaire that uses another course's public survey shares it, so only the owning course may change it.
+     *
+     * @param int|null $userid
+     * @return bool
+     */
+    public function can_edit_survey_settings(?int $userid = null): bool {
+        return $this->can_manage_questionnaire($userid) && $this->questionnaire->is_survey_owner();
+    }
+
+    /**
      * True if the current user can view this questionnaire.
      *
      * @return bool
