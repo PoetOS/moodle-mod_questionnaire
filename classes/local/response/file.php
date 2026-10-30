@@ -328,13 +328,9 @@ class file extends responsetype {
 
         // If array element is an object, outputting non-numeric responses.
         if (is_object(reset($weights))) {
-            global $CFG, $DB;
+            global $DB;
             $viewsingleresponse = $this->canviewsingleresponse;
             $nonanonymous = $this->displayrespondenttype !== 'anonymous';
-            if ($viewsingleresponse && $nonanonymous) {
-                $url = $CFG->wwwroot . '/mod/questionnaire/report.php?action=vresp&amp;sid=' . $this->displaysurveysid .
-                    '&currentgroupid=' . (int) $currentgroupid;
-            }
             $users = [];
             $evencolor = false;
             foreach ($weights as $row) {
@@ -355,13 +351,10 @@ class file extends responsetype {
 
                     $response->text = \html_writer::link($imageurl, $file->get_filename());
                     if ($viewsingleresponse && $nonanonymous) {
-                        $rurl = $url . '&amp;rid=' . $row->rid . '&amp;individualresponse=1';
-                        $title = userdate($row->submitted);
                         if (!isset($users[$row->userid])) {
                             $users[$row->userid] = $DB->get_record('user', ['id' => $row->userid]);
                         }
-                        $response->respondent =
-                            '<a href="' . $rurl . '" title="' . $title . '">' . fullname($users[$row->userid]) . '</a>';
+                        $response->respondent = $this->respondent_link($row, $users[$row->userid], $currentgroupid);
                     }
                 } else {
                     $response->respondent = '';

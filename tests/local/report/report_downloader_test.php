@@ -162,10 +162,11 @@ final class report_downloader_test extends \advanced_testcase {
 
         $sink = $this->redirectEmails();
 
-        $iterator = new \ArrayIterator([
+        // A plain array, as download_responses() passes from generate_csv().
+        $rows = [
             ['col1' => 'row1a', 'col2' => 'row1b'],
             ['col1' => 'row2a', 'col2' => 'row2b'],
-        ]);
+        ];
 
         $method = new \ReflectionMethod($downloader, 'stream_and_email');
         $method->setAccessible(true);
@@ -177,7 +178,7 @@ final class report_downloader_test extends \advanced_testcase {
                 'qreport',
                 'csv',
                 ['col1' => 'Col 1', 'col2' => 'Col 2'],
-                $iterator,
+                $rows,
                 [$user],
                 ['extra@example.org'],
                 new \moodle_url('/mod/questionnaire/report.php', ['instance' => $questionnaire->id()])
