@@ -198,6 +198,31 @@ class capabilities {
     }
 
     /**
+     * True if the current user may see responses filtered to the given group.
+     *
+     * The group must belong to this course. In separate groups, a user without access to all groups must also be a
+     * member. Group 0 (all participants) is always allowed here; callers narrow it for separate groups.
+     *
+     * @param int $groupid
+     * @return bool
+     */
+    public function can_view_group(int $groupid): bool {
+        global $USER;
+        if ($groupid <= 0) {
+            return true;
+        }
+        $group = groups_get_group($groupid);
+        if (!$group || $group->courseid != $this->questionnaire->courseid()) {
+            return false;
+        }
+        $groupmode = groups_get_activity_groupmode($this->questionnaire->coursemodule(), $this->questionnaire->course());
+        if ($groupmode != SEPARATEGROUPS || $this->can_view_all_groups()) {
+            return true;
+        }
+        return groups_is_member($groupid, $USER->id);
+    }
+
+    /**
      * True if the specified user is allowed to take this questionnaire right now.
      *
      * @param int $userid

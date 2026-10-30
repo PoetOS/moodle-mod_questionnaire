@@ -70,11 +70,12 @@ if ($outputtarget == 'pdf') {
     $page = page::report();
 }
 
-// If you can't view the questionnaire, or can't view a specified response, error out.
+// If you can't view the questionnaire, a specified response or the requested group, error out.
 $context = $questionnaire->context();
 if (
     !$questionnaire->capabilities()->can_view_all_responses(null, true) ||
-    ($rid && !$questionnaire->capabilities()->can_view_response((int)$rid))
+    ($rid && !$questionnaire->capabilities()->can_view_response((int)$rid)) ||
+    !$questionnaire->capabilities()->can_view_group((int)$currentgroupid)
 ) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
@@ -126,7 +127,7 @@ $groupscount = 0;
 
 if ($groupmode > 0) {
     if ($groupmode == 1) {
-        $questionnairegroups = groups_get_all_groups($course->id, $userid);
+        $questionnairegroups = groups_get_all_groups($course->id, $USER->id);
     }
     if ($groupmode == 2 || $questionnaire->capabilities()->can_view_all_groups()) {
         $questionnairegroups = groups_get_all_groups($course->id);
