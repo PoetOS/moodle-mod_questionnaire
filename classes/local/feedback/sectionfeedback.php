@@ -39,6 +39,8 @@ class sectionfeedback {
     public $feedbacktext = '';
     /** @var string */
     public $feedbacktextformat = FORMAT_HTML;
+    /** @var int 1 if the text was saved by a trusted user (see \mod_questionnaire\local\trusttext). */
+    public $feedbacktexttrust = 0;
     /** @var float */
     public $minscore = 0.0;
     /** @var float */
@@ -77,6 +79,7 @@ class sectionfeedback {
         $newsf->feedbacklabel = $data->feedbacklabel;
         $newsf->feedbacktext = $data->feedbacktext;
         $newsf->feedbacktextformat = $data->feedbacktextformat;
+        $newsf->feedbacktexttrust = (int)($data->feedbacktexttrust ?? 0);
         $newsf->minscore = $data->minscore;
         $newsf->maxscore = $data->maxscore;
 
@@ -85,6 +88,7 @@ class sectionfeedback {
             'feedbacklabel' => $newsf->feedbacklabel,
             'feedbacktext' => $newsf->feedbacktext,
             'feedbacktextformat' => $newsf->feedbacktextformat,
+            'feedbacktexttrust' => $newsf->feedbacktexttrust,
             'minscore' => $newsf->minscore,
             'maxscore' => $newsf->maxscore,
         ]);
@@ -106,6 +110,7 @@ class sectionfeedback {
             'feedbacklabel' => $this->feedbacklabel,
             'feedbacktext' => $this->feedbacktext,
             'feedbacktextformat' => $this->feedbacktextformat,
+            'feedbacktexttrust' => $this->feedbacktexttrust,
             'minscore' => $this->minscore,
             'maxscore' => $this->maxscore,
         ]);

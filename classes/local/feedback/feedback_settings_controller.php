@@ -58,6 +58,7 @@ class feedback_settings_controller {
         $fields = [
             'feedbackscores'   => isset($formdata->feedbackscores) ? (int) $formdata->feedbackscores : 0,
             'feedbacknotes'    => $this->save_feedbacknotes($formdata),
+            'feedbacknotestrust' => \mod_questionnaire\local\trusttext::flag($this->questionnaire->context()),
             'feedbacksections' => isset($formdata->feedbacksections) ? (int) $formdata->feedbacksections : 0,
         ];
 

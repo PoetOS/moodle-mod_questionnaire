@@ -165,4 +165,22 @@ final class feedback_settings_controller_test extends \advanced_testcase {
 
         $this->assertEquals(0, $DB->count_records('questionnaire_fb_sections', ['surveyid' => $surveyid]));
     }
+
+    /**
+     * The feedback notes are flagged trusted only when saved by a trusted user.
+     */
+    public function test_save_records_notes_trust(): void {
+        $questionnaire = $this->setup_questionnaire();
+        $formdata = (object) [
+            'feedbacksections' => 1,
+            'feedbackscores' => 0,
+            'feedbacknotes' => ['itemid' => 0, 'format' => FORMAT_HTML, 'text' => 'Note text'],
+        ];
+        (new feedback_settings_controller($questionnaire))->save($formdata);
+        $this->assertSame(0, questionnaire::from_instanceid($questionnaire->id())->feedback()->notes_trust());
+
+        set_config('enabletrusttext', 1);
+        (new feedback_settings_controller($questionnaire))->save($formdata);
+        $this->assertSame(1, questionnaire::from_instanceid($questionnaire->id())->feedback()->notes_trust());
+    }
 }

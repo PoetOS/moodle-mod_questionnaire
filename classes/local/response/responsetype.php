@@ -206,7 +206,7 @@ abstract class responsetype {
             $evencolor = false;
             foreach ($weights as $content => $num) {
                 $response = new \stdClass();
-                $response->text = format_text($content, FORMAT_HTML, ['noclean' => true]);
+                $response->text = $this->question->format_content($content);
                 if ($num > 0) {
                     $percent = round((float)$num / (float)$respondents * 100.0);
                 } else {

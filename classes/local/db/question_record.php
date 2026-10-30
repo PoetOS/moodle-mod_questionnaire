@@ -71,6 +71,10 @@ class question_record extends \core\persistent {
                 'type' => PARAM_RAW,
                 'default' => '',
             ],
+            'contenttrust' => [
+                'type' => PARAM_INT,
+                'default' => 0,
+            ],
             'required' => [
                 'type' => PARAM_ALPHA,
                 'default' => 'n',

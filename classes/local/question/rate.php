@@ -340,7 +340,7 @@ class rate extends question {
                         $rowobj->othercontent = $response->answers[$this->id()][$cid]->otheresponse;
                     }
                 }
-                $rowobj->content = format_text($content, FORMAT_HTML, ['noclean' => true]) . '&nbsp;';
+                $rowobj->content = $this->format_content($content) . '&nbsp;';
                 $bg = 'c0';
                 $cols = [];
                 if (!empty($this->nameddegrees)) {
@@ -382,7 +382,7 @@ class rate extends question {
                 }
                 $rowobj->cols = $cols;
                 if ($this->osgood_rate_scale()) {
-                    $rowobj->osgoodstr = '&nbsp;' . format_text($contentright, FORMAT_HTML, ['noclean' => true]);
+                    $rowobj->osgoodstr = '&nbsp;' . $this->format_content($contentright);
                 }
                 $resptags->rows[] = $rowobj;
             }
@@ -754,9 +754,9 @@ class rate extends question {
                     $extrahtml .= '<li>' . $extracontent . '</li>';
                 }
                 $extrahtml .= '</ul>';
-                $options = ['noclean' => true, 'para' => false, 'filter' => true,
+                $options = ['para' => false, 'filter' => true,
                     'context' => $this->context, 'overflowdiv' => true];
-                $choice->content .= format_text($extrahtml, FORMAT_HTML, $options);
+                $choice->content .= $this->format_content($extrahtml, $options);
             }
 
             if (!in_array($choiceid, $excludes)) {
@@ -991,7 +991,7 @@ class rate extends question {
         $collabel = [];
         for ($j = 1; $j <= $this->length(); $j++) {
             if (isset($degreelabels[$j - 1])) {
-                $text = format_text($degreelabels[$j - 1], FORMAT_HTML, ['noclean' => true]);
+                $text = $this->format_content($degreelabels[$j - 1]);
             } else {
                 $text = (string) $j;
             }
@@ -1065,10 +1065,10 @@ class rate extends question {
         $row = [];
         if ($choice->is_other_choice()) {
             $odata = $response->answers[$this->id()][$cid]->value ?? '';
-            $row['itemtext'] = format_text($choice->other_choice_display(), FORMAT_HTML, ['noclean' => true]);
+            $row['itemtext'] = $this->format_content($choice->other_choice_display());
             $row['other'] = ['name' => $cid . '_qother', 'id' => $cid . '-other', 'value' => stripslashes($odata)];
         } else {
-            $row['itemtext'] = format_text($content, FORMAT_HTML, ['noclean' => true]);
+            $row['itemtext'] = $this->format_content($content);
         }
 
         $answer = $response->answers[$this->id()][$cid] ?? null;
@@ -1109,7 +1109,7 @@ class rate extends question {
         }
 
         if ($this->osgood_rate_scale()) {
-            $row['osgoodright'] = format_text($contentright, FORMAT_HTML, ['noclean' => true]);
+            $row['osgoodright'] = $this->format_content($contentright);
         }
         return $row;
     }

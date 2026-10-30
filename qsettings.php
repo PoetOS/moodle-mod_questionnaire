@@ -71,7 +71,7 @@ $currentinfo = file_prepare_draft_area(
     'info',
     $sdata->sid,
     ['subdirs' => true],
-    $questionnaire->survey()->info()
+    \mod_questionnaire\local\trusttext::for_edit($questionnaire->survey()->info(), $questionnaire->survey()->info_trust(), $context)
 );
 $sdata->info = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 
@@ -83,7 +83,11 @@ $currentinfo = file_prepare_draft_area(
     'thankbody',
     $sdata->sid,
     ['subdirs' => true],
-    $questionnaire->survey()->thankbody()
+    \mod_questionnaire\local\trusttext::for_edit(
+        $questionnaire->survey()->thankbody(),
+        $questionnaire->survey()->thankbody_trust(),
+        $context
+    )
 );
 $sdata->thankbody = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 

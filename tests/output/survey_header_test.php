@@ -185,4 +185,31 @@ final class survey_header_test extends \advanced_testcase {
         $this->assertStringContainsString('<div class="addInfo"><p>Info</p></div>', $html);
         $this->assertStringContainsString('&lt;b&gt;Bold&lt;/b&gt; Name', $html);
     }
+
+    /**
+     * The survey info is cleaned unless it is trusted and trusted content is enabled.
+     */
+    public function test_for_survey_formats_info_by_trust(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_instance([
+            'course' => $this->getDataGenerator()->create_course()->id,
+        ]);
+        $payload = '<p>Info</p><script>alert(1)</script>';
+        $DB->set_field('questionnaire_survey', 'info', $payload, ['id' => $questionnaire->surveyid()]);
+        set_config('enabletrusttext', 1);
+
+        $info = survey_header::for_survey(questionnaire::from_instanceid($questionnaire->id()))->export_for_template(
+            $this->renderer()
+        )->info;
+        $this->assertStringContainsString('Info', $info);
+        $this->assertStringNotContainsString('<script>', $info);
+
+        $DB->set_field('questionnaire_survey', 'infotrust', 1, ['id' => $questionnaire->surveyid()]);
+        $info = survey_header::for_survey(questionnaire::from_instanceid($questionnaire->id()))->export_for_template(
+            $this->renderer()
+        )->info;
+        $this->assertStringContainsString('<script>', $info);
+    }
 }

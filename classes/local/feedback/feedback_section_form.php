@@ -124,7 +124,11 @@ class feedback_section_form extends \moodleform {
                     'feedback',
                     (int) $feedback->id,
                     null,
-                    $feedback->feedbacktext
+                    \mod_questionnaire\local\trusttext::for_edit(
+                        $feedback->feedbacktext,
+                        (int)$feedback->feedbacktexttrust,
+                        $this->context
+                    )
                 ),
                 'format' => FORMAT_HTML,
                 'itemid' => $draftid,
@@ -279,7 +283,7 @@ class feedback_section_form extends \moodleform {
                 'feedbacktext',
                 get_string('feedbackrangemessage', 'questionnaire'),
                 null,
-                ['maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $questionnaire->context()]
+                ['maxfiles' => EDITOR_UNLIMITED_FILES, 'context' => $questionnaire->context()]
             ),
             $mform->createElement(
                 'submit',

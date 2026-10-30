@@ -28,6 +28,7 @@ use mod_questionnaire\edit_question_form;
 use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\db\question_type_record;
 use mod_questionnaire\local\question_type;
+use mod_questionnaire\local\trusttext;
 use mod_questionnaire\local\response\response;
 use mod_questionnaire\questionnaire;
 use html_writer;
@@ -176,7 +177,7 @@ abstract class question {
 
         // Apply caller-supplied overrides ($params keys map to DB columns or declared props).
         $dbfields = ['surveyid', 'name', 'typeid', 'length', 'precise',
-                     'position', 'content', 'required', 'deleted', 'extradata'];
+                     'position', 'content', 'contenttrust', 'required', 'deleted', 'extradata'];
         foreach ($params as $property => $value) {
             if ($property === 'id') {
                 $stub = new \stdClass();
@@ -292,6 +293,27 @@ abstract class question {
      */
     public function content(): ?string {
         return $this->record ? (string) $this->record->get('content') : null;
+    }
+
+    /**
+     * Get the trust flag for the question text and its choices (see \mod_questionnaire\local\trusttext).
+     *
+     * @return int
+     */
+    public function content_trust(): int {
+        return $this->record ? (int)$this->record->get('contenttrust') : 0;
+    }
+
+    /**
+     * Format HTML written by the question's author (question text, choices, degree labels) for display, by the
+     * question's trust flag.
+     *
+     * @param string|null $text
+     * @param array $options Other format_text() options.
+     * @return string
+     */
+    public function format_content(?string $text, array $options = []): string {
+        return trusttext::format($text, $this->content_trust(), $options);
     }
 
     /**
@@ -1397,8 +1419,8 @@ abstract class question {
             'question',
             $this->id()
         );
-        $options = ['noclean' => true, 'para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true];
-        $pagetags->qcontent = format_text($content, FORMAT_HTML, $options);
+        $options = ['para' => false, 'filter' => true, 'context' => $this->context, 'overflowdiv' => true];
+        $pagetags->qcontent = $this->format_content($content, $options);
         $this->qlegend = strip_tags($content);
         $pagetags->qlegend = $this->qlegend;
 
@@ -1829,6 +1851,8 @@ abstract class question {
                     $questionrecord->$f = trim($formdata->$f);
                 }
             }
+            // The text and choices are trusted only when saved by a trusted user.
+            $questionrecord->contenttrust = trusttext::flag($questionnaire->context());
 
             $this->update($questionrecord, false);
 
@@ -1865,6 +1889,7 @@ abstract class question {
                 $formdata->content
             );
             $this->record->set('content', $content);
+            $this->record->set('contenttrust', trusttext::flag($questionnaire->context()));
             $this->record->update();
         }
 
@@ -2072,14 +2097,14 @@ abstract class question {
      * @return \stdClass
      */
     public function mobile_question_display($qnum, $autonum = false) {
-        $options = ['noclean' => true, 'para' => false, 'filter' => true,
+        $options = ['para' => false, 'filter' => true,
             'context' => $this->context, 'overflowdiv' => true];
         $mobiledata = (object)[
             'id' => $this->id(),
             'name' => $this->name(),
             'typeid' => $this->typeid(),
             'length' => $this->length(),
-            'content' => format_text(
+            'content' => $this->format_content(
                 file_rewrite_pluginfile_urls(
                     $this->content(),
                     'pluginfile.php',
@@ -2088,7 +2113,6 @@ abstract class question {
                     'question',
                     $this->id()
                 ),
-                FORMAT_HTML,
                 $options
             ),
             'content_stripped' => strip_tags($this->content()),
@@ -2124,7 +2148,7 @@ abstract class question {
             foreach ($this->choices as $choice) {
                 $choices[$cnum] = clone($choice);
                 $contents = self::parse_choice_content($choice->content);
-                $choices[$cnum]->content = format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
+                $choices[$cnum]->content = $this->format_content($contents->text) . $contents->image;
                 $cnum++;
             }
         }

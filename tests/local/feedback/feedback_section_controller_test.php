@@ -164,4 +164,23 @@ final class feedback_section_controller_test extends \advanced_testcase {
         $section = section::new_section($questionnaire->surveyid(), 'Section');
         return [$questionnaire, $questionnaire->feedback()->section($section->id), array_keys($questionnaire->questions())];
     }
+
+    /**
+     * The section heading and feedback texts are flagged trusted only when saved by a trusted user.
+     */
+    public function test_save_records_trust(): void {
+        [$questionnaire, $section] = $this->setup_section(1);
+        $heading = ['sectionheading' => ['text' => '<p>Heading</p>', 'format' => FORMAT_HTML, 'itemid' => 0]];
+
+        $this->save($questionnaire, $section, ['50', ''], ['<p>High</p>', '<p>Low</p>'], $heading);
+        $saved = $questionnaire->feedback()->section($section->id);
+        $this->assertSame(0, (int)$saved->sectionheadingtrust);
+        $this->assertSame([0, 0], array_map(fn($f) => (int)$f->feedbacktexttrust, array_values($saved->sectionfeedback)));
+
+        set_config('enabletrusttext', 1);
+        $this->save($questionnaire, $saved, ['50', ''], ['<p>High</p>', '<p>Low</p>'], $heading);
+        $saved = $questionnaire->feedback()->section($section->id);
+        $this->assertSame(1, (int)$saved->sectionheadingtrust);
+        $this->assertSame([1, 1], array_map(fn($f) => (int)$f->feedbacktexttrust, array_values($saved->sectionfeedback)));
+    }
 }

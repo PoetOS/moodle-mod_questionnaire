@@ -65,4 +65,38 @@ final class question_test extends \advanced_testcase {
         $this->assertEquals($mine->surveyid(), $dependency->surveyid);
         $this->assertFalse($DB->record_exists('questionnaire_question', ['surveyid' => $other->surveyid(), 'name' => 'Planted']));
     }
+
+    /**
+     * Saving the question form records whether its author is trusted, and the text is shown by that flag.
+     *
+     * @covers \mod_questionnaire\local\question\question::content_trust
+     * @covers \mod_questionnaire\local\question\question::format_content
+     */
+    public function test_form_update_records_content_trust(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire($this->getDataGenerator()->create_course());
+        $payload = '<p>Pick</p><script>alert(1)</script>';
+        $save = function (string $name) use ($questionnaire, $payload): question {
+            global $DB;
+            [$question] = $questionnaire->survey()->prep_question_for_form(0, QUESTEXT);
+            $question->form_update((object)[
+                'qid' => 0, 'typeid' => QUESTEXT, 'name' => $name, 'length' => 20, 'precise' => 25, 'required' => 'n',
+                'content' => ['text' => $payload, 'format' => FORMAT_HTML, 'itemid' => file_get_unused_draft_itemid()],
+            ], $questionnaire);
+            $id = $DB->get_field('questionnaire_question', 'id', ['name' => $name], MUST_EXIST);
+            return question::question_builder(QUESTEXT, (int)$id);
+        };
+
+        $untrusted = $save('Untrusted');
+        $this->assertSame(0, $untrusted->content_trust());
+        $this->assertStringNotContainsString('<script>', $untrusted->format_content($untrusted->content()));
+
+        set_config('enabletrusttext', 1);
+        $trusted = $save('Trusted');
+        $this->assertSame(1, $trusted->content_trust());
+        $this->assertStringContainsString('<script>', $trusted->format_content($trusted->content()));
+        $this->assertStringNotContainsString('<script>', $untrusted->format_content($untrusted->content()));
+    }
 }

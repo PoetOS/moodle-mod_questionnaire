@@ -17,6 +17,7 @@
 namespace mod_questionnaire\local\feedback;
 
 use mod_questionnaire\local\db\feedback_record;
+use mod_questionnaire\local\trusttext;
 use mod_questionnaire\questionnaire;
 
 /**
@@ -68,6 +69,7 @@ class feedback_section_controller {
                 $formdata->sectionheading['text']
             );
             $section->sectionheadingformat = $formdata->sectionheading['format'];
+            $section->sectionheadingtrust = trusttext::flag($this->questionnaire->context());
         }
         if ($this->questionnaire->feedback()->mode() > 1) {
             $section->scorecalculation = $this->weights($formdata);
@@ -129,6 +131,7 @@ class feedback_section_controller {
             $feedback->minscore = $min;
             $feedback->maxscore = $max;
             $feedback->feedbacktextformat = $row['editor']['format'] ?? FORMAT_HTML;
+            $feedback->feedbacktexttrust = trusttext::flag($this->questionnaire->context());
             $feedback->feedbacktext = file_save_draft_area_files(
                 (int) ($row['editor']['itemid'] ?? 0),
                 $this->questionnaire->context()->id,

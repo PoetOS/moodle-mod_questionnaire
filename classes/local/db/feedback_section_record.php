@@ -67,6 +67,10 @@ class feedback_section_record extends \core\persistent {
                 'null' => NULL_ALLOWED,
                 'default' => 1,
             ],
+            'sectionheadingtrust' => [
+                'type' => PARAM_INT,
+                'default' => 0,
+            ],
         ];
     }
 

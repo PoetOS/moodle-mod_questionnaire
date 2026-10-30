@@ -34,3 +34,32 @@ function questionnaire_upgrade_move_question_deletion_duration(): void {
         unset_config('duration', 'questionnaire_questiondeletion');
     }
 }
+
+/**
+ * The text fields that carry a trust flag, as table => [text field => trust field].
+ *
+ * @return array
+ */
+function questionnaire_upgrade_trust_fields(): array {
+    return [
+        'questionnaire_survey' => ['info' => 'infotrust', 'thankbody' => 'thankbodytrust', 'feedbacknotes' => 'feedbacknotestrust'],
+        'questionnaire_question' => ['content' => 'contenttrust'],
+        'questionnaire_fb_sections' => ['sectionheading' => 'sectionheadingtrust'],
+        'questionnaire_feedback' => ['feedbacktext' => 'feedbacktexttrust'],
+    ];
+}
+
+/**
+ * Mark all existing staff-authored text as trusted.
+ *
+ * Before trust flags existed this text was always shown unfiltered, and only users with RISK_XSS capabilities could
+ * write it. Marking it trusted keeps it unfiltered on sites that enable trusted content; elsewhere it is now cleaned.
+ */
+function questionnaire_upgrade_trust_existing_content(): void {
+    global $DB;
+    foreach (questionnaire_upgrade_trust_fields() as $table => $fields) {
+        foreach ($fields as $trustfield) {
+            $DB->set_field($table, $trustfield, 1);
+        }
+    }
+}

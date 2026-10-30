@@ -1322,4 +1322,45 @@ final class survey_test extends \advanced_testcase {
         $this->assertStringNotContainsString('<b>', $label);
         $this->assertStringNotContainsString('<i>', $label);
     }
+
+    /**
+     * Copying a survey keeps the trust flags of its texts, questions and feedback.
+     *
+     * @covers \mod_questionnaire\local\survey\survey::copy_survey
+     */
+    public function test_copy_survey_keeps_trust_flags(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $questionnaire = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_test_questionnaire(
+            $course,
+            QUESTEXT
+        );
+        $sid = $questionnaire->surveyid();
+        $section = \mod_questionnaire\local\feedback\section::new_section($sid, 'Section');
+        \mod_questionnaire\local\feedback\sectionfeedback::new_sectionfeedback((object)['sectionid' => $section->id,
+            'feedbacklabel' => '', 'feedbacktext' => 'Text', 'feedbacktextformat' => FORMAT_HTML, 'minscore' => 0,
+            'maxscore' => 100]);
+        $DB->set_field('questionnaire_survey', 'infotrust', 1, ['id' => $sid]);
+        $DB->set_field('questionnaire_survey', 'thankbodytrust', 1, ['id' => $sid]);
+        $DB->set_field('questionnaire_survey', 'feedbacknotestrust', 1, ['id' => $sid]);
+        $DB->set_field('questionnaire_question', 'contenttrust', 1, ['surveyid' => $sid]);
+        $DB->set_field('questionnaire_fb_sections', 'sectionheadingtrust', 1, ['surveyid' => $sid]);
+        $DB->set_field('questionnaire_feedback', 'feedbacktexttrust', 1, ['sectionid' => $section->id]);
+
+        $newsid = survey::copy_survey(
+            (new survey_record($sid))->to_record(),
+            survey::load_questions_for_survey($sid),
+            (int)$course->id
+        );
+
+        $survey = $DB->get_record('questionnaire_survey', ['id' => $newsid]);
+        $this->assertEquals([1, 1, 1], [$survey->infotrust, $survey->thankbodytrust, $survey->feedbacknotestrust]);
+        $questiontrust = $DB->get_fieldset('questionnaire_question', 'contenttrust', ['surveyid' => $newsid]);
+        $this->assertEquals([1], array_values($questiontrust));
+        $newsection = $DB->get_record('questionnaire_fb_sections', ['surveyid' => $newsid]);
+        $this->assertEquals(1, $newsection->sectionheadingtrust);
+        $this->assertEquals(1, $DB->get_field('questionnaire_feedback', 'feedbacktexttrust', ['sectionid' => $newsection->id]));
+    }
 }

@@ -30,8 +30,8 @@ use html_writer;
 use mod_questionnaire\local\db\feedback_record;
 use mod_questionnaire\local\db\feedback_section_record;
 use mod_questionnaire\local\db\response_record;
+use mod_questionnaire\local\trusttext;
 use mod_questionnaire\questionnaire;
-use stdClass;
 
 /**
  * Feedback domain object.
@@ -47,7 +47,7 @@ use stdClass;
 class feedback {
     /** @var string[] Survey persistent fields owned by the feedback concern. */
     public const UPDATABLE_FIELDS = [
-        'feedbacknotes', 'feedbacksections', 'feedbackscores', 'charttype',
+        'feedbacknotes', 'feedbacknotestrust', 'feedbacksections', 'feedbackscores', 'charttype',
     ];
 
     /**
@@ -99,6 +99,15 @@ class feedback {
      */
     public function notes(): string {
         return $this->questionnaire->survey()->raw_field('feedbacknotes') ?? '';
+    }
+
+    /**
+     * Trust flag for the feedback notes (see \mod_questionnaire\local\trusttext).
+     *
+     * @return int
+     */
+    public function notes_trust(): int {
+        return (int)$this->questionnaire->survey()->raw_field('feedbacknotestrust');
     }
 
     /**
@@ -340,12 +349,10 @@ class feedback {
                 $sectionid
             );
             $feedbackmessages[] = $renderer->box_start();
-            $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, ['noclean' => true]);
+            $feedbackmessages[] = trusttext::format($sectionheading, (int)$fbsections[$sectionid]->sectionheadingtrust);
             $feedbackmessages[] = $renderer->box_end();
 
             if (!empty($feedback->feedbacktext)) {
-                $formatoptions = new stdClass();
-                $formatoptions->noclean = true;
                 $feedbacktext = file_rewrite_pluginfile_urls(
                     $feedback->feedbacktext,
                     'pluginfile.php',
@@ -354,7 +361,11 @@ class feedback {
                     'feedback',
                     $feedback->id
                 );
-                $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, $formatoptions);
+                $feedbacktext = format_text(
+                    $feedbacktext,
+                    $feedback->feedbacktextformat,
+                    ['trusted' => (bool)$feedback->feedbacktexttrust]
+                );
                 $feedbackmessages[] = $renderer->box_start();
                 $feedbackmessages[] = $feedbacktext;
                 $feedbackmessages[] = $renderer->box_end();
@@ -434,6 +445,7 @@ class feedback {
                         $scorecalculation = [];
                     }
                     $sectionheading = $fbsection->sectionheading;
+                    $sectionheadingtrust = (int)$fbsection->sectionheadingtrust;
                     $imageid = $fbsection->id;
                     $chartlabels[$section] = $fbsection->sectionlabel;
                 }
@@ -471,8 +483,6 @@ class feedback {
                 $original = ['$scorepercent', '$oppositescorepercent'];
                 $result = ["$scorepercent[$section]%", "$oppositescorepercent[$section]%"];
                 $sectionheading = str_replace($original, $result, $sectionheading);
-                $formatoptions = new stdClass();
-                $formatoptions->noclean = true;
                 $sectionheading = file_rewrite_pluginfile_urls(
                     $sectionheading,
                     'pluginfile.php',
@@ -481,18 +491,15 @@ class feedback {
                     'sectionheading',
                     $imageid
                 );
-                $sectionheading = format_text($sectionheading, 1, $formatoptions);
                 $feedbackmessages[] = $renderer->box_start('reportQuestionTitle');
-                $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, $formatoptions);
+                $feedbackmessages[] = trusttext::format($sectionheading, $sectionheadingtrust);
                 $feedback = feedback_record::find_for_score(
                     $feedbacksectionid,
                     (float) $scorepercent[$section],
-                    'id,feedbacktext,feedbacktextformat'
+                    'id,feedbacktext,feedbacktextformat,feedbacktexttrust'
                 );
                 $feedbackmessages[] = $renderer->box_end();
                 if (!empty($feedback->feedbacktext)) {
-                    $formatoptions = new stdClass();
-                    $formatoptions->noclean = true;
                     $feedbacktext = file_rewrite_pluginfile_urls(
                         $feedback->feedbacktext,
                         'pluginfile.php',
@@ -501,7 +508,11 @@ class feedback {
                         'feedback',
                         $feedback->id
                     );
-                    $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, $formatoptions);
+                    $feedbacktext = format_text(
+                        $feedbacktext,
+                        $feedback->feedbacktextformat,
+                        ['trusted' => (bool)$feedback->feedbacktexttrust]
+                    );
                     $feedbackmessages[] = $renderer->box_start('feedbacktext');
                     $feedbackmessages[] = $feedbacktext;
                     $feedbackmessages[] = $renderer->box_end();

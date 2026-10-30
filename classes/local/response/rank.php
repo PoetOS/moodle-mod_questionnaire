@@ -785,12 +785,12 @@ class rank extends responsetype {
         return (object)[
             'column1' => self::make_text_column(
                 $headers[1],
-                '<div class="mdl-right">' . format_text($content, FORMAT_HTML, ['noclean' => true]) . '</div>'
+                '<div class="mdl-right">' . $this->question->format_content($content) . '</div>'
             ),
             'column2' => self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf, $fillpercent),
             'column3' => self::make_text_column(
                 $headers[3],
-                '<div class="mdl-left">' . format_text($contentright, FORMAT_HTML, ['noclean' => true]) . '</div>'
+                '<div class="mdl-left">' . $this->question->format_content($contentright) . '</div>'
             ),
         ];
     }
@@ -843,7 +843,7 @@ class rank extends responsetype {
         }
 
         $row = (object)[
-            'column1' => self::make_text_column($headers[1], format_text($content, FORMAT_HTML, ['noclean' => true])),
+            'column1' => self::make_text_column($headers[1], $this->question->format_content($content)),
             'column2' => self::make_chart_column($headers[2], $imageurl, $spacerimage, $margin, $marginpdf, $fillpercent),
             'column3' => self::make_text_column($headers[3], $stravgval),
         ];
@@ -1144,7 +1144,7 @@ class rank extends responsetype {
 
         $names = [];
         foreach (array_values($this->question->nameddegrees) as $i => $degree) {
-            $names[$i] = format_text($degree, FORMAT_HTML, ['noclean' => true]);
+            $names[$i] = $this->question->format_content($degree);
         }
         for ($j = 0; $j < $this->question->length(); $j++) {
             $label = $names[$j] ?? ($j + 1);
@@ -1210,7 +1210,7 @@ class rank extends responsetype {
         $header = reset($headers);
         $cols[] = (object)[
             'align' => $header->align,
-            'text'  => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false]),
+            'text'  => $this->question->format_content($content, ['filter' => false]),
         ];
 
         // Rank/rate numbers.
@@ -1232,7 +1232,7 @@ class rank extends responsetype {
             $header = next($headers);
             $cols[] = (object)[
                 'align' => $header->align,
-                'text'  => format_text($contentright, FORMAT_HTML, ['noclean' => true]),
+                'text'  => $this->question->format_content($contentright),
             ];
         }
 

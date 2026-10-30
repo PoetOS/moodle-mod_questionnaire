@@ -227,6 +227,10 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
             unset($data->chart_type);
         }
 
+        foreach (['infotrust', 'thankbodytrust', 'feedbacknotestrust'] as $trustfield) {
+            $data->$trustfield = $this->restored_trust($data, $trustfield);
+        }
+
         // Insert the questionnaire_survey record.
         $newitemid = $DB->insert_record('questionnaire_survey', $data);
         $this->set_mapping('questionnaire_survey', $oldid, $newitemid, true);
@@ -263,6 +267,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
             unset($data->result_id);
         }
 
+        $data->contenttrust = $this->restored_trust($data, 'contenttrust');
+
         // Insert the questionnaire_question record.
         $newitemid = $DB->insert_record('questionnaire_question', $data);
         $this->set_mapping('questionnaire_question', $oldid, $newitemid, true);
@@ -298,6 +304,8 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
             $data->scorecalculation = serialize($newscorecalculation);
         }
 
+        $data->sectionheadingtrust = $this->restored_trust($data, 'sectionheadingtrust');
+
         // Insert the questionnaire_fb_sections record.
         $newitemid = $DB->insert_record('questionnaire_fb_sections', $data);
         $this->set_mapping('questionnaire_fb_sections', $oldid, $newitemid, true);
@@ -314,9 +322,28 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $oldid = $data->id;
         $data->sectionid = $this->get_new_parentid('questionnaire_fb_sections');
 
+        $data->feedbacktexttrust = $this->restored_trust($data, 'feedbacktexttrust');
+
         // Insert the questionnaire_feedback record.
         $newitemid = $DB->insert_record('questionnaire_feedback', $data);
         $this->set_mapping('questionnaire_feedback', $oldid, $newitemid, true);
+    }
+
+    /**
+     * The trust flag to restore for a staff-authored text field.
+     *
+     * Text stays trusted only if the restoring user is trusted. Backups made before trust flags existed have none;
+     * their text was always shown unfiltered, so it is trusted when the restoring user is.
+     *
+     * @param \stdClass $data The restored record.
+     * @param string $trustfield
+     * @return int
+     */
+    protected function restored_trust(\stdClass $data, string $trustfield): int {
+        if (!trusttext_trusted(\context::instance_by_id($this->task->get_contextid()))) {
+            return 0;
+        }
+        return isset($data->$trustfield) ? (int)$data->$trustfield : 1;
     }
 
     /**

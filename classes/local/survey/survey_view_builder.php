@@ -630,7 +630,7 @@ class survey_view_builder {
         $header = new survey_header(
             format_string($thankhead),
             '',
-            format_text(
+            \mod_questionnaire\local\trusttext::format(
                 file_rewrite_pluginfile_urls(
                     $thankbody,
                     'pluginfile.php',
@@ -639,8 +639,7 @@ class survey_view_builder {
                     'thankbody',
                     $q->surveyid()
                 ),
-                FORMAT_HTML,
-                ['noclean' => true]
+                $q->survey()->thankbody_trust()
             )
         );
         $this->page->add_to_page('surveyheader', $header->export_for_template($this->renderer));
