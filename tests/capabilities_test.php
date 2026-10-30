@@ -620,16 +620,20 @@ final class capabilities_test extends \advanced_testcase {
     }
 
     /**
-     * In separate groups, a student allowed to view all responses sees their own and their group mates' only.
+     * In separate groups, a student allowed to view all individual responses sees their own and their group mates' only.
      *
      * @covers \mod_questionnaire\capabilities::can_view_response
      */
     public function test_can_view_response_separate_groups_student(): void {
+        global $DB;
         $this->resetAfterTest();
         [$questionnaire, $course, $groupa, $rids, $students] = $this->make_group_responses(
             SEPARATEGROUPS,
             questionnaire::RESPVIEW_ALWAYS
         );
+        $studentrole = $DB->get_field('role', 'id', ['shortname' => 'student']);
+        assign_capability('mod/questionnaire:viewsingleresponse', CAP_ALLOW, $studentrole, $questionnaire->context()->id);
+        accesslib_clear_all_caches_for_unit_testing();
 
         $mate = $this->getDataGenerator()->create_and_enrol($course, 'student');
         $this->getDataGenerator()->create_group_member(['groupid' => $groupa->id, 'userid' => $mate->id]);
@@ -641,6 +645,38 @@ final class capabilities_test extends \advanced_testcase {
         // A student with no group still sees their own response.
         $this->setUser($students['none']);
         $this->assertTrue($questionnaire->capabilities()->can_view_response($rids['none']));
+        $this->assertFalse($questionnaire->capabilities()->can_view_response($rids['a']));
+    }
+
+    /**
+     * A student allowed to view all responses sees summaries only: other students' individual responses need the
+     * individual response capability, while their own stays visible.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_response
+     */
+    public function test_can_view_response_needs_viewsingleresponse_for_others(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$questionnaire, $course, $groupa, $rids, $students] = $this->make_group_responses(
+            NOGROUPS,
+            questionnaire::RESPVIEW_ALWAYS
+        );
+
+        $this->setUser($students['a']);
+        $this->assertTrue($questionnaire->capabilities()->can_view_all_responses());
+        $this->assertTrue($questionnaire->capabilities()->can_view_response($rids['a']));
+        $this->assertFalse($questionnaire->capabilities()->can_view_response($rids['b']));
+
+        $studentrole = $DB->get_field('role', 'id', ['shortname' => 'student']);
+        assign_capability('mod/questionnaire:viewsingleresponse', CAP_ALLOW, $studentrole, $questionnaire->context()->id);
+        accesslib_clear_all_caches_for_unit_testing();
+        $this->assertTrue($questionnaire->capabilities()->can_view_response($rids['b']));
+
+        // Staff without the capability cannot open other users' responses either.
+        $teacherrole = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
+        assign_capability('mod/questionnaire:viewsingleresponse', CAP_PROHIBIT, $teacherrole, $questionnaire->context()->id);
+        accesslib_clear_all_caches_for_unit_testing();
+        $this->setUser($this->getDataGenerator()->create_and_enrol($course, 'editingteacher'));
         $this->assertFalse($questionnaire->capabilities()->can_view_response($rids['a']));
     }
 }

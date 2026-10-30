@@ -282,7 +282,9 @@ class report_viewer {
     ): void {
         global $PAGE;
 
+        // Browsing individual responses, including the list of respondents, needs the individual response capability.
         if (
+            !$this->questionnaire->capabilities()->can_view_single_response() ||
             !$this->questionnaire->capabilities()->can_view_all_responses(null, true) ||
             ($rid && !$this->questionnaire->capabilities()->can_view_response((int)$rid))
         ) {
