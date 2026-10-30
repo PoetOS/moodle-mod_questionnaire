@@ -219,9 +219,9 @@ final class responsetype_test extends \advanced_testcase {
         $type->setAccessible(true);
         $this->assertSame('anonymous', $type->getValue($rt));
 
-        $sid = $reflection->getProperty('displaysurveysid');
-        $sid->setAccessible(true);
-        $this->assertSame(42, $sid->getValue($rt));
+        $instanceid = $reflection->getProperty('displayinstanceid');
+        $instanceid->setAccessible(true);
+        $this->assertSame(42, $instanceid->getValue($rt));
     }
 
     /**
@@ -937,6 +937,26 @@ final class responsetype_test extends \advanced_testcase {
 
         $pagetags = $rt->display_results([$rid, $rid2, $rid3]);
         $this->assertIsObject($pagetags);
+    }
+
+    /**
+     * text::display_results() links each respondent to their response in this questionnaire's report.
+     */
+    public function test_text_display_results_links_respondent_to_report(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESTEXT);
+        $rt = new text($question);
+        $rt->insert_response((object)['rid' => $rid, 'a' => $questionnaire->id(), 'q' . $question->id() => 'Hello']);
+        $rt->set_display_context(true, 'fullname', $questionnaire->id());
+
+        $html = json_encode($rt->display_results([$rid], '', false, 3), JSON_UNESCAPED_SLASHES);
+        $this->assertStringContainsString('/mod/questionnaire/report.php?action=vresp', $html);
+        $this->assertStringContainsString('instance=' . $questionnaire->id(), $html);
+        $this->assertStringContainsString('group=3', $html);
+        $this->assertStringContainsString('rid=' . $rid, $html);
+        $this->assertStringNotContainsString('currentgroupid', $html);
     }
 
     /**

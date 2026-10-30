@@ -174,11 +174,11 @@ class reporter {
         $groupid = is_numeric($currentgroupid) ? (int)$currentgroupid : null;
         $viewsingleresponse = $this->questionnaire->capabilities()->can_view_single_response();
         $respondenttype = $this->questionnaire->respondenttype();
-        $surveyid = $this->questionnaire->surveyid();
+        $instanceid = $this->questionnaire->id();
         $qnum = 0;
         foreach ($questions as $question) {
             if (isset($question->responsetype) && is_object($question->responsetype)) {
-                $question->responsetype->set_display_context($viewsingleresponse, $respondenttype, $surveyid);
+                $question->responsetype->set_display_context($viewsingleresponse, $respondenttype, $instanceid);
             }
             if ($question->typeid() == QUESPAGEBREAK) {
                 continue;
