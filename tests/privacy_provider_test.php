@@ -307,4 +307,82 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         $this->setAdminUser();
         return [$questionnaire, $user, $rid, $recordid];
     }
+
+    /**
+     * For the owner of a public survey, deleting all data in its context removes its own responses, including
+     * saved drafts, and leaves other courses' responses to the survey alone.
+     */
+    public function test_delete_data_for_all_users_in_context_public_survey_owner(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$owner, $other, $user] = $this->make_public_survey_responses();
+
+        provider::delete_data_for_all_users_in_context($owner->context());
+
+        $this->assertSame(0, $DB->count_records('questionnaire_response', ['questionnaireid' => $owner->id()]));
+        $this->assertSame(1, $DB->count_records('questionnaire_response', ['questionnaireid' => $other->id()]));
+    }
+
+    /**
+     * For the owner of a public survey, deleting one user's data removes their responses there, including saved
+     * drafts, and nothing in other courses or of other users.
+     */
+    public function test_delete_data_for_user_public_survey_owner(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$owner, $other, $user] = $this->make_public_survey_responses();
+        $classmate = $this->getDataGenerator()->create_and_enrol($owner->course(), 'student');
+        $this->commit_response($owner, $classmate->id);
+
+        provider::delete_data_for_user(
+            new \core_privacy\local\request\approved_contextlist($user, 'mod_questionnaire', [$owner->context()->id])
+        );
+
+        $this->assertSame(0, $DB->count_records('questionnaire_response', ['questionnaireid' => $owner->id(),
+            'userid' => $user->id]));
+        $this->assertSame(1, $DB->count_records('questionnaire_response', ['questionnaireid' => $owner->id()]));
+        $this->assertSame(1, $DB->count_records('questionnaire_response', ['questionnaireid' => $other->id()]));
+
+        provider::delete_data_for_users(
+            new \core_privacy\local\request\approved_userlist($owner->context(), 'mod_questionnaire', [$classmate->id])
+        );
+        $this->assertSame(0, $DB->count_records('questionnaire_response', ['questionnaireid' => $owner->id()]));
+        $this->assertSame(1, $DB->count_records('questionnaire_response', ['questionnaireid' => $other->id()]));
+    }
+
+    /**
+     * Make a public survey owned by one course and used by another, with one user's submitted response and saved
+     * draft in the owner and a submitted response in the other course.
+     *
+     * @return array [owning questionnaire, other questionnaire, user]
+     */
+    private function make_public_survey_responses(): array {
+        $this->setAdminUser();
+        $dg = $this->getDataGenerator();
+        $qdg = $dg->get_plugin_generator('mod_questionnaire');
+        $owner = $qdg->create_instance(['course' => $dg->create_course()->id]);
+        $qdg->create_content($owner, ['realm' => 'public']);
+        $other = $qdg->create_instance(['course' => $dg->create_course()->id, 'create' => 'public-' . $owner->surveyid()]);
+        $owner = questionnaire::from_instanceid($owner->id());
+        $other = questionnaire::from_instanceid($other->id());
+        $this->assertTrue($owner->survey_is_public_master());
+
+        $user = $dg->create_and_enrol($owner->course(), 'student');
+        $dg->enrol_user($user->id, $other->courseid(), 'student');
+        $this->commit_response($owner, $user->id);
+        \mod_questionnaire\local\response\response::create($owner->id(), $user->id);
+        $this->commit_response($other, $user->id);
+        return [$owner, $other, $user];
+    }
+
+    /**
+     * Create and submit an empty response.
+     *
+     * @param questionnaire $questionnaire
+     * @param int $userid
+     */
+    private function commit_response(questionnaire $questionnaire, int $userid): void {
+        $rid = \mod_questionnaire\local\response\response::create($questionnaire->id(), $userid)->id();
+        $questionnaire->responses()->response_commit($rid);
+    }
 }
