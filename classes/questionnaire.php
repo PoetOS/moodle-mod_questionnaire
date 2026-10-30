@@ -205,6 +205,30 @@ class questionnaire {
     }
 
     /**
+     * Return the questionnaire to preview for a survey from the "Add questionnaire" form.
+     *
+     * With a questionnaire id, that questionnaire in the survey's course is used, and it must use the survey;
+     * otherwise a survey-only instance is returned.
+     *
+     * @param int $sid Survey id, already checked as one the user may copy.
+     * @param int $qid Questionnaire id, or 0.
+     * @param \stdClass $course The course that owns the survey.
+     * @return self
+     * @throws \moodle_exception If the questionnaire does not use the survey.
+     */
+    public static function for_survey_preview(int $sid, int $qid, \stdClass $course): self {
+        $cm = $qid ? get_coursemodule_from_instance('questionnaire', $qid, $course->id) : false;
+        if (!$cm) {
+            return self::from_survey($sid, $course);
+        }
+        $questionnaire = self::from_cmid($cm->id);
+        if ($questionnaire->surveyid() != $sid) {
+            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+        }
+        return $questionnaire;
+    }
+
+    /**
      * Get the id of the questionnaire instance. Returns 0 in survey-only mode.
      *
      * @return int
