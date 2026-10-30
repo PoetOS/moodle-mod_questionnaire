@@ -388,4 +388,20 @@ final class lib_test extends \advanced_testcase {
         $positions = $DB->get_fieldset_select('questionnaire_question', 'position', 'surveyid = ?', [$sid]);
         $this->assertCount(count(array_unique($positions)), $positions);
     }
+
+    /**
+     * Every capability gives its default roles under 'archetypes'; the 'legacy' key is a Moodle 1.9 fallback.
+     *
+     * @coversNothing
+     */
+    public function test_capability_definitions_use_archetypes(): void {
+        global $CFG;
+        $capabilities = [];
+        include($CFG->dirroot . '/mod/questionnaire/db/access.php');
+        $this->assertNotEmpty($capabilities);
+        foreach ($capabilities as $name => $definition) {
+            $this->assertArrayNotHasKey('legacy', $definition, $name);
+            $this->assertArrayHasKey('archetypes', $definition, $name);
+        }
+    }
 }

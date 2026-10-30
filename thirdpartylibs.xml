@@ -3,8 +3,8 @@
     <library>
         <location>javascript/RGraph</location>
         <name>RGraph</name>
-        <version>?</version>
+        <version>2013 (unversioned build)</version>
         <license>MIT</license>
-        <licenseversion>?</licenseversion>
+        <licenseversion></licenseversion>
     </library>
 </libraries>
