@@ -258,7 +258,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
 
         $subcontext = [get_string('responses', 'questionnaire'), $rid];
         $files = \core_privacy\local\request\writer::with_context($context)->get_files($subcontext);
-        $this->assertArrayHasKey('mine.txt', $files);
+        $this->assertArrayHasKey('mine.pdf', $files);
     }
 
     /**
@@ -278,7 +278,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
     }
 
     /**
-     * Create a questionnaire with a file question and a response in which a new user uploaded 'mine.txt'.
+     * Create a questionnaire with a file question and a response in which a new user uploaded 'mine.pdf'.
      *
      * @return array [questionnaire, user, response id, response file record id]
      */
@@ -301,7 +301,7 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
             'filearea' => 'draft',
             'itemid' => $draftitemid,
             'filepath' => '/',
-            'filename' => 'mine.txt',
+            'filename' => 'mine.pdf',
         ], 'mine');
         $recordid = $question->insert_response((object)['rid' => $rid, 'q' . $question->id() => $draftitemid]);
         $this->setAdminUser();

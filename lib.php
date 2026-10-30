@@ -369,7 +369,8 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
     }
 
     // Finally send the file.
-    send_stored_file($file, null, 0, $forcedownload, $options); // Download MUST be forced - security!
+    // Files uploaded by respondents are always downloaded, never shown inline, so uploaded HTML cannot run as the viewer.
+    send_stored_file($file, null, 0, ($filearea === 'response_file') ? true : $forcedownload, $options);
 }
 /**
  * Adds module specific settings to the settings block

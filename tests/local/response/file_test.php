@@ -45,12 +45,67 @@ final class file_test extends \advanced_testcase {
         $this->setUser($user);
         $rid = $this->make_response($questionnaire, $user->id);
 
-        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'mine.txt');
+        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'mine.pdf');
 
         $this->assertIsInt($recordid);
         $file = $this->stored_file($questionnaire, $recordid);
-        $this->assertSame('mine.txt', $file->get_filename());
+        $this->assertSame('mine.pdf', $file->get_filename());
         $this->assertEquals($file->get_id(), (new response_file_record($recordid))->get('fileid'));
+    }
+
+    /**
+     * A file of a type the question does not accept is not saved.
+     */
+    public function test_insert_response_rejects_unaccepted_type(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $question] = $this->make_file_questionnaire();
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $rid = $this->make_response($questionnaire, $user->id);
+
+        $this->assertFalse($this->upload_answer($questionnaire, $question, $rid, 'page.html'));
+        $this->assertEmpty(response_file_record::get_for_response($rid));
+        $this->assertEmpty(get_file_storage()->get_area_files(
+            $questionnaire->context()->id,
+            'mod_questionnaire',
+            'response_file',
+            false,
+            'id',
+            false
+        ));
+    }
+
+    /**
+     * Only the accepted file is saved when the draft area also holds another file.
+     */
+    public function test_insert_response_saves_only_the_accepted_file(): void {
+        global $USER;
+        $this->resetAfterTest();
+        [$questionnaire, $question] = $this->make_file_questionnaire();
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $rid = $this->make_response($questionnaire, $user->id);
+        $draftitemid = file_get_unused_draft_itemid();
+        get_file_storage()->create_file_from_string([
+            'contextid' => \context_user::instance($USER->id)->id,
+            'component' => 'user',
+            'filearea' => 'draft',
+            'itemid' => $draftitemid,
+            'filepath' => '/',
+            'filename' => 'a-page.html',
+        ], 'html');
+
+        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'z-answer.pdf', $draftitemid);
+
+        $files = get_file_storage()->get_area_files(
+            $questionnaire->context()->id,
+            'mod_questionnaire',
+            'response_file',
+            $recordid,
+            'id',
+            false
+        );
+        $this->assertSame(['z-answer.pdf'], array_values(array_map(fn($file) => $file->get_filename(), $files)));
     }
 
     /**
@@ -63,11 +118,11 @@ final class file_test extends \advanced_testcase {
         $this->setUser($user);
         $rid = $this->make_response($questionnaire, $user->id);
 
-        $first = $this->upload_answer($questionnaire, $question, $rid, 'first.txt');
-        $second = $this->upload_answer($questionnaire, $question, $rid, 'second.txt');
+        $first = $this->upload_answer($questionnaire, $question, $rid, 'first.pdf');
+        $second = $this->upload_answer($questionnaire, $question, $rid, 'second.pdf');
 
         $this->assertNull($this->stored_file($questionnaire, $first));
-        $this->assertSame('second.txt', $this->stored_file($questionnaire, $second)->get_filename());
+        $this->assertSame('second.pdf', $this->stored_file($questionnaire, $second)->get_filename());
 
         $emptydraft = file_get_unused_draft_itemid();
         $this->assertFalse($question->insert_response((object)['rid' => $rid, 'q' . $question->id() => $emptydraft]));
@@ -87,7 +142,7 @@ final class file_test extends \advanced_testcase {
             $questionnaire,
             $question,
             $this->make_response($questionnaire, $victim->id),
-            'victim.txt'
+            'victim.pdf'
         );
 
         $attacker = $this->getDataGenerator()->create_user();
@@ -97,7 +152,7 @@ final class file_test extends \advanced_testcase {
         response::response_from_webform($formdata, [$question->id() => $question]);
         $question->insert_response($formdata);
 
-        $this->assertSame('victim.txt', $this->stored_file($questionnaire, $victimrecordid)->get_filename());
+        $this->assertSame('victim.pdf', $this->stored_file($questionnaire, $victimrecordid)->get_filename());
     }
 
     /**
@@ -112,17 +167,17 @@ final class file_test extends \advanced_testcase {
             $other,
             $otherquestion,
             $this->make_response($other, $victim->id),
-            'victim.txt'
+            'victim.pdf'
         );
 
         [$questionnaire, $question] = $this->make_file_questionnaire();
         $attacker = $this->getDataGenerator()->create_user();
         $this->setUser($attacker);
         $rid = $this->make_response($questionnaire, $attacker->id);
-        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'attacker.txt', $victimrecordid);
+        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'attacker.pdf', $victimrecordid);
 
-        $this->assertSame('victim.txt', $this->stored_file($other, $victimrecordid)->get_filename());
-        $this->assertSame('attacker.txt', $this->stored_file($questionnaire, $recordid)->get_filename());
+        $this->assertSame('victim.pdf', $this->stored_file($other, $victimrecordid)->get_filename());
+        $this->assertSame('attacker.pdf', $this->stored_file($questionnaire, $recordid)->get_filename());
     }
 
     /**
@@ -136,7 +191,7 @@ final class file_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
         $rid = $this->make_response($questionnaire, $user->id);
-        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'mine.txt');
+        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'mine.pdf');
 
         $questionnaire->responses()->delete_response((object)['id' => $rid, 'userid' => $user->id]);
 
@@ -159,8 +214,8 @@ final class file_test extends \advanced_testcase {
         $otherquestions = $other->questions();
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
-        $first = $this->upload_answer($questionnaire, $question, $this->make_response($questionnaire, $user->id), 'one.txt');
-        $second = $this->upload_answer($other, reset($otherquestions), $this->make_response($other, $user->id), 'two.txt');
+        $first = $this->upload_answer($questionnaire, $question, $this->make_response($questionnaire, $user->id), 'one.pdf');
+        $second = $this->upload_answer($other, reset($otherquestions), $this->make_response($other, $user->id), 'two.pdf');
         $this->assertNotNull($this->stored_file($other, $second));
 
         questionnaire_responses::delete_responses_for_question($question->id());
@@ -183,7 +238,7 @@ final class file_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
         $rid = $this->make_response($questionnaire, $user->id);
-        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'old.txt');
+        $recordid = $this->upload_answer($questionnaire, $question, $rid, 'old.pdf');
         $DB->set_field('questionnaire', 'removeafter', HOURSECS, ['id' => $questionnaire->id()]);
         $DB->update_record('questionnaire_response', (object)[
             'id' => $rid,

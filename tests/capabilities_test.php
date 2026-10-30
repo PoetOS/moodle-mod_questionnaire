@@ -480,7 +480,7 @@ final class capabilities_test extends \advanced_testcase {
             'filearea' => 'draft',
             'itemid' => $draftitemid,
             'filepath' => '/',
-            'filename' => 'answer.txt',
+            'filename' => 'answer.pdf',
         ], 'answer');
         $recordid = $question->insert_response((object)['rid' => $rid, 'q' . $question->id() => $draftitemid]);
         return [$questionnaire, $owner, $rid, $recordid];
@@ -542,7 +542,7 @@ final class capabilities_test extends \advanced_testcase {
             $questionnaire->coursemodule(),
             $questionnaire->context(),
             'response_file',
-            [$recordid, 'answer.txt'],
+            [$recordid, 'answer.pdf'],
             true,
             []
         ));
