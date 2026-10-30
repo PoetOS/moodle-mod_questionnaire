@@ -45,8 +45,8 @@ abstract class responsetype {
     /** @var string Respondent type ('anonymous' or other) for the owning questionnaire. */
     protected string $displayrespondenttype = '';
 
-    /** @var int Survey ID for the owning questionnaire (used to build report URLs). */
-    protected int $displaysurveysid = 0;
+    /** @var int Id of the owning questionnaire (used to build report URLs). */
+    protected int $displayinstanceid = 0;
 
     /**
      * Provide the values needed by text and file response result renderers so they
@@ -54,12 +54,31 @@ abstract class responsetype {
      *
      * @param bool $viewsingleresponse Whether the current user may view a single response.
      * @param string $respondenttype 'anonymous' or '' / named.
-     * @param int $surveyid The survey id of the owning questionnaire.
+     * @param int $instanceid The id of the owning questionnaire.
      */
-    public function set_display_context(bool $viewsingleresponse, string $respondenttype, int $surveyid): void {
+    public function set_display_context(bool $viewsingleresponse, string $respondenttype, int $instanceid): void {
         $this->canviewsingleresponse = $viewsingleresponse;
         $this->displayrespondenttype = $respondenttype;
-        $this->displaysurveysid = $surveyid;
+        $this->displayinstanceid = $instanceid;
+    }
+
+    /**
+     * Link to a respondent's individual response in the report, showing their name.
+     *
+     * @param \stdClass $row Result row with rid and submitted.
+     * @param \stdClass $user The respondent.
+     * @param int|null $currentgroupid Active group filter.
+     * @return string
+     */
+    protected function respondent_link(\stdClass $row, \stdClass $user, ?int $currentgroupid): string {
+        $url = new \moodle_url('/mod/questionnaire/report.php', [
+            'action' => 'vresp',
+            'instance' => $this->displayinstanceid,
+            'group' => (int)$currentgroupid,
+            'rid' => $row->rid,
+            'individualresponse' => 1,
+        ]);
+        return \html_writer::link($url, s(fullname($user)), ['title' => userdate($row->submitted)]);
     }
 
     /**

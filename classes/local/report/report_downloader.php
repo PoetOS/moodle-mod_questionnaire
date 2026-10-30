@@ -94,8 +94,8 @@ class report_downloader {
             if ($currentgroupid == 0) {
                 $groupname = get_string('allparticipants');
             } else {
-                $groupname = get_string('membersofselectedgroup', 'group') . ' ' .
-                    get_string('group') . ' ' . $questionnairegroups[$currentgroupid]->name;
+                $groupname = get_string('membersofselectedgroup', 'group') . ' ' . get_string('group') . ' ' .
+                    format_string(groups_get_group_name($currentgroupid), true, ['context' => $this->questionnaire->context()]);
             }
         }
 
@@ -218,7 +218,7 @@ class report_downloader {
      * @param string $filename Base filename without extension.
      * @param string $dataformat Dataformat name ('csv', 'xlsx', etc.).
      * @param array $columns Ordered map of column keys and labels.
-     * @param \Iterator $iterator Iterator over the records (usually a recordset).
+     * @param iterable $iterator The records, as an array or iterator.
      * @param array $users Moodle user objects to email.
      * @param array $emails Extra email addresses to email.
      * @param \moodle_url|string $redirect URL to redirect the browser to once email is dispatched.
@@ -227,7 +227,7 @@ class report_downloader {
         string $filename,
         string $dataformat,
         array $columns,
-        \Iterator $iterator,
+        iterable $iterator,
         array $users,
         array $emails,
         \moodle_url|string $redirect

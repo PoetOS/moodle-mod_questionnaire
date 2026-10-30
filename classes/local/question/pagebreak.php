@@ -69,7 +69,7 @@ class pagebreak extends question {
      * @param bool $blankquestionnaire
      *
      */
-    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire = alse) {
+    protected function question_survey_display($data, $descendantsdata, $blankquestionnaire = false) {
         return '';
     }
 
