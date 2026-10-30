@@ -147,6 +147,19 @@ class capabilities {
     }
 
     /**
+     * True if the current user can print the given response, or a blank questionnaire when $rid is 0.
+     *
+     * @param int $rid
+     * @return bool
+     */
+    public function can_print(int $rid): bool {
+        if (!$this->can_view()) {
+            return false;
+        }
+        return ($rid == 0) ? $this->can_print_blank() : $this->can_view_response($rid);
+    }
+
+    /**
      * True if the current user can preview this questionnaire.
      *
      * @return bool

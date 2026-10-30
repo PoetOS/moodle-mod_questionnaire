@@ -43,8 +43,8 @@ $page = !empty($rid)
     ? \mod_questionnaire\output\page::report()
     : \mod_questionnaire\output\page::preview();
 
-// If you can't view the questionnaire, or can't view a specified response, error out.
-if (!($questionnaire->capabilities()->can_view() && (($rid == 0) || $questionnaire->capabilities()->can_view_response($rid)))) {
+// If you can't print a blank questionnaire, or can't view a specified response, error out.
+if (!$questionnaire->capabilities()->can_print((int)$rid)) {
     // Should never happen, unless called directly by a snoop...
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
