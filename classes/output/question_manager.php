@@ -167,7 +167,7 @@ class question_manager implements \renderable, \templatable {
                 if ($displaycontent == '<p>  </p>') {
                     $displaycontent = '';
                 }
-                $contenthtml = format_text(
+                $contenthtml = $question->format_content(
                     file_rewrite_pluginfile_urls(
                         $displaycontent,
                         'pluginfile.php',
@@ -175,9 +175,7 @@ class question_manager implements \renderable, \templatable {
                         'mod_questionnaire',
                         'question',
                         $qid
-                    ),
-                    FORMAT_HTML,
-                    ['noclean' => true]
+                    )
                 );
                 if ($question->is_numbered()) {
                     $qnum++;
@@ -243,7 +241,7 @@ class question_manager implements \renderable, \templatable {
             if ($displaycontent == '<p>  </p>') {
                 $displaycontent = '';
             }
-            $contenthtml = format_text(
+            $contenthtml = $question->format_content(
                 file_rewrite_pluginfile_urls(
                     $displaycontent,
                     'pluginfile.php',
@@ -251,9 +249,7 @@ class question_manager implements \renderable, \templatable {
                     'mod_questionnaire',
                     'question',
                     $qid
-                ),
-                FORMAT_HTML,
-                ['noclean' => true]
+                )
             );
 
             if (empty($duration)) {

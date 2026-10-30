@@ -137,7 +137,7 @@ class check extends question {
             $checkbox->name = 'q' . $this->id() . '[' . $id . ']';
             $checkbox->value = $id;
             $checkbox->id = 'checkbox_' . $id;
-            $checkbox->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
+            $checkbox->label = $this->format_content($contents->text) . $contents->image;
             if ($checked) {
                 $checkbox->checked = $checked;
             }
@@ -145,7 +145,7 @@ class check extends question {
                 $checkbox->oname = 'q' . $this->id() . '[' . $choice->other_choice_name() . ']';
                 $checkbox->ovalue = (isset($response->answers[$this->id()][$id]) && !empty($response->answers[$this->id()][$id]) ?
                     format_string(stripslashes($response->answers[$this->id()][$id]->value)) : '');
-                $checkbox->label = format_text($choice->other_choice_display() . '', FORMAT_HTML, ['noclean' => true]);
+                $checkbox->label = $this->format_content($choice->other_choice_display() . '');
             }
             if (!empty($this->qlegend)) {
                 $checkbox->alabel = strip_tags("{$this->qlegend} {$checkbox->label}");
@@ -182,13 +182,7 @@ class check extends question {
                     $chobj->selected = 1;
                 }
                 $chobj->name = $id . $uniquetag++;
-                $chobj->content = (($choice->content === '') ? $id :
-                    format_text(
-                        $choice->content,
-                        FORMAT_HTML,
-                        ['noclean' => true]
-                    )
-                );
+                $chobj->content = (($choice->content === '') ? $id : $this->format_content($choice->content));
             } else {
                 $othertext = $choice->other_choice_display();
                 if (isset($response->answers[$this->id()][$id])) {
@@ -362,7 +356,7 @@ class check extends question {
             $choices[$choicenum]->choicefieldkey = $this->mobile_fieldkey($choice->id);
             if ($choice->is_other_choice()) {
                 $choices[$choicenum]->otherchoicekey = $this->mobile_fieldkey($choice->other_choice_name());
-                $choices[$choicenum]->content = format_text($choice->other_choice_display(), FORMAT_HTML, ['noclean' => true]);
+                $choices[$choicenum]->content = $this->format_content($choice->other_choice_display());
             }
         }
         return $choices;

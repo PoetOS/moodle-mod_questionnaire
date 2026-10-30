@@ -1483,5 +1483,29 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2026113100.01, 'questionnaire');
     }
 
+    if ($oldversion < 2026113100.03) {
+        // Add a trust flag for each staff-authored text field, so it is only shown unfiltered when trusted.
+        $previous = [
+            'infotrust' => 'info',
+            'thankbodytrust' => 'thankbody',
+            'feedbacknotestrust' => 'feedbacknotes',
+            'contenttrust' => 'content',
+            'sectionheadingtrust' => 'sectionheadingformat',
+            'feedbacktexttrust' => 'feedbacktextformat',
+        ];
+        foreach (questionnaire_upgrade_trust_fields() as $tablename => $fields) {
+            $table = new xmldb_table($tablename);
+            foreach ($fields as $trustfield) {
+                $previousfield = $previous[$trustfield];
+                $field = new xmldb_field($trustfield, XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', $previousfield);
+                if (!$dbman->field_exists($table, $field)) {
+                    $dbman->add_field($table, $field);
+                }
+            }
+        }
+        questionnaire_upgrade_trust_existing_content();
+        upgrade_mod_savepoint(true, 2026113100.03, 'questionnaire');
+    }
+
     return true;
 }

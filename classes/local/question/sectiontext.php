@@ -74,14 +74,14 @@ class sectiontext extends question {
      * @param bool $autonum
      */
     public function mobile_question_display($qnum, $autonum = false) {
-        $options = ['noclean' => true, 'para' => false, 'filter' => true,
+        $options = ['para' => false, 'filter' => true,
             'context' => $this->context, 'overflowdiv' => true];
         $mobiledata = (object)[
             'id' => $this->id(),
             'name' => $this->name(),
             'typeid' => $this->typeid(),
             'length' => $this->length(),
-            'content' => format_text(
+            'content' => $this->format_content(
                 file_rewrite_pluginfile_urls(
                     $this->content(),
                     'pluginfile.php',
@@ -90,7 +90,6 @@ class sectiontext extends question {
                     'question',
                     $this->id()
                 ),
-                FORMAT_HTML,
                 $options
             ),
             'content_stripped' => strip_tags($this->content()),

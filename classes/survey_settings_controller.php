@@ -16,6 +16,8 @@
 
 namespace mod_questionnaire;
 
+use mod_questionnaire\local\trusttext;
+
 /**
  * Controller for the qsettings.php save flow.
  *
@@ -58,6 +60,8 @@ class survey_settings_controller {
             'thankhead'  => $formdata->thankhead ?? '',
             'thankbody'  => $this->save_editor($formdata, 'thankbody'),
         ];
+        // The editor text is trusted only when saved by a trusted user.
+        $fields['infotrust'] = $fields['thankbodytrust'] = trusttext::flag($this->questionnaire->context());
         // The email field is disabled in the form when email reporting is off; never accept a posted value then.
         if (get_config('questionnaire', 'allowemailreporting')) {
             $fields['email'] = $formdata->email ?? '';

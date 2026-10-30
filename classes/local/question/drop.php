@@ -144,7 +144,7 @@ class drop extends question {
             $contents = question::parse_choice_content($choice->content);
             $chobj = new \stdClass();
             $chobj->value = $id;
-            $chobj->label = format_text($contents->text, FORMAT_HTML, ['noclean' => true]);
+            $chobj->label = $this->format_content($contents->text);
             if (isset($response->answers[$this->id()][$id])) {
                 $chobj->selected = 1;
                 $resptags->selectedlabel = $chobj->label;

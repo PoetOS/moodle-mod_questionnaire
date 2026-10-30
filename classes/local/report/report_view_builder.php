@@ -232,7 +232,7 @@ class report_view_builder {
             if ($rendered !== '') {
                 $this->page->add_to_page(
                     'feedbacknotes',
-                    $this->renderer->box(format_text($rendered, FORMAT_HTML))
+                    $this->renderer->box(\mod_questionnaire\local\trusttext::format($rendered, $q->feedback()->notes_trust()))
                 );
             }
         }

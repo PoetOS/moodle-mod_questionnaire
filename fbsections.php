@@ -70,7 +70,11 @@ $currentinfo = file_prepare_draft_area(
     'sectionheading',
     $feedbacksection->id,
     ['subdirs' => true],
-    $feedbacksection->sectionheading
+    \mod_questionnaire\local\trusttext::for_edit(
+        $feedbacksection->sectionheading,
+        (int)$feedbacksection->sectionheadingtrust,
+        $questionnaire->context()
+    )
 );
 $feedbackform->set_data([
     'id' => $id,

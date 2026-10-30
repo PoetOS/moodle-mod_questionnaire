@@ -117,7 +117,7 @@ class radio extends question {
                     $value = ' (' . $choice->value . ') ';
                 }
                 $contents = question::parse_choice_content($choice->content);
-                $radio->label = $value . format_text($contents->text, FORMAT_HTML, ['noclean' => true]) . $contents->image;
+                $radio->label = $value . $this->format_content($contents->text) . $contents->image;
                 if (!empty($this->qlegend)) {
                     $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
                 }
@@ -135,13 +135,13 @@ class radio extends question {
                     $ischecked = true;
                 }
                 $otherempty = !empty($radio->checked) && empty($odata);
-                $radio->label = format_text($othertext, FORMAT_HTML, ['noclean' => true]);
+                $radio->label = $this->format_content($othertext);
                 $radio->oname = 'q' . $this->id() . choice::id_other_choice_name($id);
                 $radio->oid = $htmlid . '-other';
                 if (isset($odata)) {
                     $radio->ovalue = format_string(stripslashes($odata));
                 }
-                $radio->olabel = 'Text for ' . format_text($othertext, FORMAT_HTML, ['noclean' => true]);
+                $radio->olabel = 'Text for ' . $this->format_content($othertext);
                 if (!empty($this->qlegend)) {
                     $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
                     $radio->aolabel = strip_tags("{$this->qlegend} {$radio->olabel}");
@@ -166,7 +166,7 @@ class radio extends question {
                 $radio->checked = true;
             }
             $content = get_string('noanswer', 'questionnaire');
-            $radio->label = format_text($content, FORMAT_HTML, ['noclean' => true]);
+            $radio->label = $this->format_content($content);
             if (!empty($this->qlegend)) {
                 $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
             }
@@ -217,7 +217,7 @@ class radio extends question {
             if ($choice->is_other_choice()) {
                 $chobj->content = $choice->other_choice_display();
             } else {
-                $chobj->content = ($choice->content === '' ? $id : format_text($choice->content, FORMAT_HTML, ['noclean' => true]));
+                $chobj->content = ($choice->content === '' ? $id : $this->format_content($choice->content));
             }
             if (!empty($this->qlegend)) {
                 $chobj->alabel = strip_tags("{$this->qlegend} {$chobj->content}");
@@ -304,7 +304,7 @@ class radio extends question {
         foreach ($choices as $choicenum => $choice) {
             if ($choice->is_other_choice()) {
                 $choices[$choicenum]->otherchoicekey = $this->mobile_fieldkey($choice->other_choice_name());
-                $choices[$choicenum]->content = format_text($choice->other_choice_display(), FORMAT_HTML, ['noclean' => true]);
+                $choices[$choicenum]->content = $this->format_content($choice->other_choice_display());
             }
         }
         return $choices;

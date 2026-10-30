@@ -170,7 +170,7 @@ class question_delete_confirmation implements \renderable, \templatable {
             'question',
             $question->id()
         );
-        return format_text($content, FORMAT_HTML, ['noclean' => true]);
+        return $question->format_content($content);
     }
 
     /**

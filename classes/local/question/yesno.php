@@ -166,7 +166,7 @@ class yesno extends question {
             $option->name = $name;
             $option->id = $htmlid;
             $option->value = $id;
-            $option->label = format_text($content, FORMAT_HTML, ['noclean' => true]);
+            $option->label = $this->format_content($content);
             if (!$ischecked && !$blankquestionnaire) {
                 $option->checked = true;
             }
