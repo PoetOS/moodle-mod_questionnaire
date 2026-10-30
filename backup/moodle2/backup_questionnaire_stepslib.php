@@ -68,12 +68,15 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             'email',
             'subtitle',
             'info',
+            'infotrust',
             'theme',
             'thankspage',
             'thankhead',
             'thankbody',
+            'thankbodytrust',
             'feedbacksections',
             'feedbacknotes',
+            'feedbacknotestrust',
             'feedbackscores',
             'charttype',
         ]);
@@ -89,6 +92,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             'precise',
             'position',
             'content',
+            'contenttrust',
             'required',
             'deleted',
             'extradata',
@@ -118,6 +122,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             'sectionlabel',
             'sectionheading',
             'sectionheadingformat',
+            'sectionheadingtrust',
         ]);
 
         $feedbacks = new backup_nested_element('feedbacks');
@@ -127,6 +132,7 @@ class backup_questionnaire_activity_structure_step extends backup_activity_struc
             'feedbacklabel',
             'feedbacktext',
             'feedbacktextformat',
+            'feedbacktexttrust',
             'minscore',
             'maxscore',
         ]);

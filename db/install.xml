@@ -48,12 +48,15 @@
         <FIELD NAME="email" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="subtitle" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="info" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="infotrust" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if info was saved by a user trusted to enter unfiltered HTML."/>
         <FIELD NAME="theme" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="thankspage" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="thankhead" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="thankbody" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="thankbodytrust" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if thankbody was saved by a user trusted to enter unfiltered HTML."/>
         <FIELD NAME="feedbacksections" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="feedbacknotes" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="feedbacknotestrust" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if feedbacknotes was saved by a user trusted to enter unfiltered HTML."/>
         <FIELD NAME="feedbackscores" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="charttype" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
@@ -76,6 +79,7 @@
         <FIELD NAME="precise" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="contenttrust" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if content and choices were saved by a user trusted to enter unfiltered HTML."/>
         <FIELD NAME="required" TYPE="char" LENGTH="1" NOTNULL="true" DEFAULT="n" SEQUENCE="false"/>
         <FIELD NAME="deleted" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The timestamp record last deleted."/>
         <FIELD NAME="extradata" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="If a question needs more than the standard fields provided, use this field."/>
@@ -250,6 +254,7 @@
         <FIELD NAME="sectionlabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="sectionheading" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="sectionheadingformat" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="sectionheadingtrust" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if sectionheading was saved by a user trusted to enter unfiltered HTML."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -263,6 +268,7 @@
         <FIELD NAME="feedbacklabel" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="feedbacktext" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="feedbacktextformat" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="feedbacktexttrust" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if feedbacktext was saved by a user trusted to enter unfiltered HTML."/>
         <FIELD NAME="minscore" TYPE="number" LENGTH="10" NOTNULL="false" DEFAULT="0.00000" SEQUENCE="false" DECIMALS="5"/>
         <FIELD NAME="maxscore" TYPE="number" LENGTH="10" NOTNULL="false" DEFAULT="101.00000" SEQUENCE="false" DECIMALS="5"/>
       </FIELDS>

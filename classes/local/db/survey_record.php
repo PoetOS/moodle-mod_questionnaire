@@ -73,6 +73,10 @@ class survey_record extends \core\persistent {
                 'null' => NULL_ALLOWED,
                 'default' => null,
             ],
+            'infotrust' => [
+                'type' => PARAM_INT,
+                'default' => 0,
+            ],
             'theme' => [
                 'type' => PARAM_TEXT,
                 'null' => NULL_ALLOWED,
@@ -93,6 +97,10 @@ class survey_record extends \core\persistent {
                 'null' => NULL_ALLOWED,
                 'default' => null,
             ],
+            'thankbodytrust' => [
+                'type' => PARAM_INT,
+                'default' => 0,
+            ],
             'feedbacksections' => [
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
@@ -102,6 +110,10 @@ class survey_record extends \core\persistent {
                 'type' => PARAM_RAW,
                 'null' => NULL_ALLOWED,
                 'default' => null,
+            ],
+            'feedbacknotestrust' => [
+                'type' => PARAM_INT,
+                'default' => 0,
             ],
             'feedbackscores' => [
                 'type' => PARAM_INT,

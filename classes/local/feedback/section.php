@@ -44,6 +44,8 @@ class section {
     public $sectionheading = '';
     /** @var string */
     public $sectionheadingformat = FORMAT_HTML;
+    /** @var int 1 if the heading was saved by a trusted user (see \mod_questionnaire\local\trusttext). */
+    public $sectionheadingtrust = 0;
     /** @var array */
     public $sectionfeedback = [];
     /** @var array */
@@ -107,6 +109,7 @@ class section {
             'sectionlabel' => $newsection->sectionlabel,
             'sectionheading' => $newsection->sectionheading,
             'sectionheadingformat' => $newsection->sectionheadingformat,
+            'sectionheadingtrust' => $newsection->sectionheadingtrust,
             'scorecalculation' => $newsection->scorecalculation,
         ]);
         $record->create();
@@ -152,6 +155,7 @@ class section {
         $this->sectionlabel = $sectionrec->get('sectionlabel');
         $this->sectionheading = $sectionrec->get('sectionheading');
         $this->sectionheadingformat = $sectionrec->get('sectionheadingformat');
+        $this->sectionheadingtrust = (int)$sectionrec->get('sectionheadingtrust');
 
         foreach (feedback_record::get_for_section($this->id, 'minscore', 'DESC') as $feedbackrec) {
             $this->sectionfeedback[$feedbackrec->get('id')] = new sectionfeedback(0, $feedbackrec->to_record());
@@ -244,6 +248,7 @@ class section {
             'sectionlabel' => $this->sectionlabel,
             'sectionheading' => $this->sectionheading,
             'sectionheadingformat' => $this->sectionheadingformat,
+            'sectionheadingtrust' => $this->sectionheadingtrust,
             'scorecalculation' => $this->scorecalculation,
         ]);
         $record->update();

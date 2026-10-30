@@ -75,7 +75,7 @@ class survey_header implements \renderable, \templatable {
         $survey = $questionnaire->survey();
         $info = '';
         if ($survey->info() !== '') {
-            $info = format_text(
+            $info = \mod_questionnaire\local\trusttext::format(
                 file_rewrite_pluginfile_urls(
                     $survey->info(),
                     'pluginfile.php',
@@ -84,8 +84,7 @@ class survey_header implements \renderable, \templatable {
                     'info',
                     $questionnaire->surveyid()
                 ),
-                FORMAT_HTML,
-                ['noclean' => true]
+                $survey->info_trust()
             );
         }
         return new self(

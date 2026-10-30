@@ -45,8 +45,8 @@ use stdClass;
 class survey {
     /** @var string[] Survey persistent fields that may be updated via update_settings(). */
     private const UPDATABLE_FIELDS = [
-        'name', 'realm', 'title', 'subtitle', 'info', 'theme',
-        'thankspage', 'thankhead', 'thankbody', 'email', 'courseid',
+        'name', 'realm', 'title', 'subtitle', 'info', 'infotrust', 'theme',
+        'thankspage', 'thankhead', 'thankbody', 'thankbodytrust', 'email', 'courseid',
     ];
 
     /** @var survey_record The survey record instance. */
@@ -218,6 +218,24 @@ class survey {
      */
     public function thankbody(): string {
         return $this->surveyrecord->get('thankbody') ?? '';
+    }
+
+    /**
+     * Trust flag for the survey info text (see \mod_questionnaire\local\trusttext).
+     *
+     * @return int
+     */
+    public function info_trust(): int {
+        return (int)$this->surveyrecord->get('infotrust');
+    }
+
+    /**
+     * Trust flag for the thank-you body text (see \mod_questionnaire\local\trusttext).
+     *
+     * @return int
+     */
+    public function thankbody_trust(): int {
+        return (int)$this->surveyrecord->get('thankbodytrust');
     }
 
     /**
@@ -706,7 +724,7 @@ class survey {
                 'question',
                 $qid,
                 ['subdirs' => true],
-                $question->content()
+                \mod_questionnaire\local\trusttext::for_edit($question->content(), $question->content_trust(), $this->context)
             );
             if (isset($question->dependencies)) {
                 foreach ($question->dependencies as $dependencies) {
@@ -983,9 +1001,9 @@ class survey {
         $newsurvey->set('name', $name);
         $newsurvey->set('status', 0);
         foreach (
-            ['realm', 'title', 'email', 'subtitle', 'info', 'theme',
-            'thankspage', 'thankhead', 'thankbody', 'feedbacksections',
-            'feedbacknotes', 'feedbackscores', 'charttype'] as $f
+            ['realm', 'title', 'email', 'subtitle', 'info', 'infotrust', 'theme',
+            'thankspage', 'thankhead', 'thankbody', 'thankbodytrust', 'feedbacksections',
+            'feedbacknotes', 'feedbacknotestrust', 'feedbackscores', 'charttype'] as $f
         ) {
             if (isset($survey->$f)) {
                 $newsurvey->set($f, $survey->$f);
@@ -1010,6 +1028,7 @@ class survey {
                     $newq->set($f, $question->$f);
                 }
             }
+            $newq->set('contenttrust', $question->content_trust());
             $newq->create();
             $newqid = $newq->get('id');
             $qidarray[$oldid] = $newqid;
@@ -1055,6 +1074,7 @@ class survey {
             $newfbs->set('sectionlabel', $oldfbs->get('sectionlabel'));
             $newfbs->set('sectionheading', $oldfbs->get('sectionheading'));
             $newfbs->set('sectionheadingformat', $oldfbs->get('sectionheadingformat'));
+            $newfbs->set('sectionheadingtrust', $oldfbs->get('sectionheadingtrust'));
             $newfbs->set('scorecalculation', serialize($newscorecalculation));
             $newfbs->create();
             $newfbsid = $newfbs->get('id');
@@ -1065,6 +1085,7 @@ class survey {
                 $newfbr->set('feedbacklabel', $oldfbr->get('feedbacklabel'));
                 $newfbr->set('feedbacktext', $oldfbr->get('feedbacktext'));
                 $newfbr->set('feedbacktextformat', $oldfbr->get('feedbacktextformat'));
+                $newfbr->set('feedbacktexttrust', $oldfbr->get('feedbacktexttrust'));
                 $newfbr->set('minscore', $oldfbr->get('minscore'));
                 $newfbr->set('maxscore', $oldfbr->get('maxscore'));
                 $newfbr->create();

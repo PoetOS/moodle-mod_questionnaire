@@ -215,4 +215,25 @@ final class survey_settings_controller_test extends \advanced_testcase {
         $email = $DB->get_field('questionnaire_survey', 'email', ['id' => $questionnaire->surveyid()]);
         $this->assertEquals('kept@example.org', $email);
     }
+
+    /**
+     * The info and thank-you texts are flagged trusted only when saved by a trusted user.
+     */
+    public function test_save_records_trust(): void {
+        global $DB;
+        $questionnaire = $this->setup_questionnaire();
+        (new survey_settings_controller($questionnaire))->save($this->formdata($questionnaire));
+        $row = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]);
+        $this->assertEquals(0, $row->infotrust);
+        $this->assertEquals(0, $row->thankbodytrust);
+
+        set_config('enabletrusttext', 1);
+        (new survey_settings_controller($questionnaire))->save($this->formdata($questionnaire));
+        $row = $DB->get_record('questionnaire_survey', ['id' => $questionnaire->surveyid()]);
+        $this->assertEquals(1, $row->infotrust);
+        $this->assertEquals(1, $row->thankbodytrust);
+        $questionnaire = questionnaire::from_instanceid($questionnaire->id());
+        $this->assertSame(1, $questionnaire->survey()->info_trust());
+        $this->assertSame(1, $questionnaire->survey()->thankbody_trust());
+    }
 }

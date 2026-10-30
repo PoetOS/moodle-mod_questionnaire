@@ -63,4 +63,32 @@ final class upgradelib_test extends \advanced_testcase {
 
         $this->assertEquals(5 * DAYSECS, get_config('questionnaire', 'questiondeletionduration'));
     }
+
+    /**
+     * Existing staff-authored text is marked trusted, keeping how it was shown before trust flags.
+     *
+     * @covers ::questionnaire_upgrade_trust_existing_content
+     */
+    public function test_trust_existing_content(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_test_questionnaire(
+            $this->getDataGenerator()->create_course(),
+            QUESTEXT
+        );
+        $section = \mod_questionnaire\local\feedback\section::new_section($questionnaire->surveyid(), 'Section');
+        \mod_questionnaire\local\feedback\sectionfeedback::new_sectionfeedback((object)['sectionid' => $section->id,
+            'feedbacklabel' => '', 'feedbacktext' => 'Text', 'feedbacktextformat' => FORMAT_HTML, 'minscore' => 0,
+            'maxscore' => 100]);
+
+        questionnaire_upgrade_trust_existing_content();
+
+        foreach (questionnaire_upgrade_trust_fields() as $table => $fields) {
+            foreach ($fields as $trustfield) {
+                $this->assertGreaterThan(0, $DB->count_records($table), $table);
+                $this->assertSame(0, $DB->count_records($table, [$trustfield => 0]), "$table.$trustfield");
+            }
+        }
+    }
 }

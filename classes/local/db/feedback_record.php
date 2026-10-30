@@ -57,6 +57,10 @@ class feedback_record extends \core\persistent {
                 'null' => NULL_ALLOWED,
                 'default' => 1,
             ],
+            'feedbacktexttrust' => [
+                'type' => PARAM_INT,
+                'default' => 0,
+            ],
             'minscore' => [
                 'type' => PARAM_FLOAT,
                 'null' => NULL_ALLOWED,
