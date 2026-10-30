@@ -49,7 +49,7 @@ $PAGE->set_context($questionnaire->context());
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 $page = page::settings();
 
-if (!$questionnaire->capabilities()->can_edit_questions()) {
+if (!$questionnaire->capabilities()->can_edit_survey_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 

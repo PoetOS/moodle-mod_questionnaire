@@ -41,7 +41,7 @@ require_course_login($questionnaire->course(), true, $questionnaire->coursemodul
 $PAGE->set_url(new moodle_url('/mod/questionnaire/fbsections.php', ['id' => $id, 'sectionid' => $sectionid]));
 $PAGE->set_context($questionnaire->context());
 
-if (!$questionnaire->capabilities()->can_edit_questions()) {
+if (!$questionnaire->capabilities()->can_edit_survey_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
