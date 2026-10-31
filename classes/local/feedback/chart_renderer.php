@@ -28,10 +28,11 @@ namespace mod_questionnaire\local\feedback;
 /**
  * Builds the canvas markup + RGraph spec consumed by feedback::build_scoreboard().
  *
- * Emits one or two <canvas> elements with unique ids, registers the RGraph
- * third-party scripts on the page, and queues the mod_questionnaire/chart AMD
- * module with a declarative spec describing the chart(s) to draw. The AMD
- * module then constructs the RGraph objects and applies the spec's Set() ops.
+ * Emits one or two <canvas> elements with unique ids, wrapped in a span whose
+ * data-chart-spec attribute holds a declarative spec describing the RGraph
+ * scripts to load and the chart(s) to draw, and queues the mod_questionnaire/chart
+ * AMD module with the span's id. The AMD module loads the
+ * scripts, then constructs the RGraph objects and applies the spec's Set() ops.
  *
  * Data preparation (label padding, color choice, dimensions, RGraph option
  * values) stays in PHP so we don't have to reimplement core_text-aware
@@ -76,9 +77,8 @@ class chart_renderer {
     /**
      * Render an RGraph chart for the feedback scoreboard.
      *
-     * Builds canvas markup, registers the RGraph third-party scripts on $page,
-     * and queues mod_questionnaire/chart::render via $PAGE->requires->js_call_amd
-     * with a declarative spec describing the chart(s) to draw.
+     * Builds canvas markup carrying a declarative spec describing the chart(s) to draw,
+     * and queues mod_questionnaire/chart::init via $PAGE->requires->js_call_amd.
      *
      * @param \moodle_page $page The page to register JS requirements on (usually $PAGE).
      * @param string $feedbacktype 'global' or 'sections'.
@@ -226,27 +226,30 @@ class chart_renderer {
             return '';
         }
 
-        self::queue_rgraph($page, $charttype);
-        $page->requires->js_call_amd('mod_questionnaire/chart', 'render', [['charts' => $charts]]);
+        // The spec rides on a data attribute; as a js_call_amd argument it passes core's 1024-character limit.
+        $spec = ['rgraph' => self::rgraph_scripts($charttype), 'charts' => $charts];
+        $page->requires->js_call_amd('mod_questionnaire/chart', 'init', [$base]);
 
-        return $primaryhtml . $secondaryhtml;
+        return \html_writer::span($primaryhtml . $secondaryhtml, '', ['id' => $base, 'data-chart-spec' => json_encode($spec)]);
+    }
+
+    /**
+     * The RGraph script files, in load order, that draw the given chart type.
+     *
+     * The mod_questionnaire/chart module loads these itself. Queuing them with $page->requires->js()
+     * put blocking scripts ahead of the footer markup, so core AMD modules could start before it existed.
+     *
+     * @param string $charttype 'bipolar', 'hbar', 'radar', 'rose', 'vprogress'.
+     * @return string[] File names in javascript/RGraph/; empty for an unknown chart type.
+     */
+    public static function rgraph_scripts(string $charttype): array {
+        if (!isset(self::RGRAPH_SCRIPT[$charttype])) {
+            return [];
+        }
+        return ['RGraph.common.core.js', self::RGRAPH_SCRIPT[$charttype]];
     }
 
     // Private helpers.
-
-    /**
-     * Register the common RGraph script + the charttype-specific RGraph script on $page.
-     *
-     * Loaded via $page->requires->js() (not AMD) because the RGraph library is a
-     * third-party global that the AMD chart driver reads from window.RGraph.
-     *
-     * @param \moodle_page $page
-     * @param string $charttype
-     */
-    private static function queue_rgraph(\moodle_page $page, string $charttype): void {
-        $page->requires->js('/mod/questionnaire/javascript/RGraph/RGraph.common.core.js');
-        $page->requires->js('/mod/questionnaire/javascript/RGraph/' . self::RGRAPH_SCRIPT[$charttype]);
-    }
 
     /**
      * Construct a single chart spec entry.

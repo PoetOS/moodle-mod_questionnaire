@@ -28,11 +28,9 @@ namespace mod_questionnaire\local\feedback;
 /**
  * Unit tests for mod_questionnaire\local\feedback\chart_renderer.
  *
- * Asserts the canvas HTML the renderer emits. The chart spec passed to the
- * mod_questionnaire/chart AMD module is serialised into the page's AMD
- * init bundle and not directly introspectable from PHP — behavioural
- * coverage of the in-browser chart rendering lives in the Behat feature
- * feedback_usergraph.feature.
+ * Asserts the canvas HTML the renderer emits and the RGraph scripts its spec asks
+ * the mod_questionnaire/chart AMD module to load. Behavioural coverage of the
+ * in-browser chart rendering lives in the Behat feature feedback_usergraph.feature.
  *
  * @group mod_questionnaire
  * @covers \mod_questionnaire\local\feedback\chart_renderer
@@ -112,5 +110,70 @@ final class chart_renderer_test extends \advanced_testcase {
         );
 
         $this->assertSame('', $html);
+    }
+
+    /**
+     * Each chart type needs the RGraph core script followed by its own chart script.
+     *
+     * @dataProvider rgraph_scripts_provider
+     * @param string $charttype
+     * @param string $script
+     */
+    public function test_rgraph_scripts_lists_core_then_chart_script(string $charttype, string $script): void {
+        global $CFG;
+        $scripts = chart_renderer::rgraph_scripts($charttype);
+        $this->assertSame(['RGraph.common.core.js', $script], $scripts);
+        foreach ($scripts as $name) {
+            $this->assertFileExists($CFG->dirroot . '/mod/questionnaire/javascript/RGraph/' . $name);
+        }
+    }
+
+    /**
+     * Chart types and the RGraph script that defines each.
+     *
+     * @return array
+     */
+    public static function rgraph_scripts_provider(): array {
+        return [
+            'bipolar' => ['bipolar', 'RGraph.bipolar.js'],
+            'hbar' => ['hbar', 'RGraph.hbar.js'],
+            'radar' => ['radar', 'RGraph.radar.js'],
+            'rose' => ['rose', 'RGraph.rose.js'],
+            'vprogress' => ['vprogress', 'RGraph.vprogress.js'],
+        ];
+    }
+
+    /**
+     * An unknown chart type needs no RGraph scripts.
+     */
+    public function test_rgraph_scripts_unknown_charttype_returns_empty(): void {
+        $this->assertSame([], chart_renderer::rgraph_scripts('not-a-real-charttype'));
+    }
+
+    /**
+     * The canvases carry the chart spec, RGraph scripts included, and the chart module gets only their wrapper's id.
+     */
+    public function test_render_puts_spec_on_wrapper_for_chart_module(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+
+        $html = chart_renderer::render($PAGE, 'global', [], 'Group A', false, 'rose', [70], [55], 'Speed', 'Your response');
+
+        $this->assertMatchesRegularExpression('/^<span id="(questionnaire-chart-\\d+)" data-chart-spec="/', $html);
+        preg_match('/^<span id="([^"]+)" data-chart-spec="([^"]*)"/', $html, $matches);
+        $spec = json_decode(html_entity_decode($matches[2], ENT_QUOTES), true);
+        $this->assertSame(['RGraph.common.core.js', 'RGraph.rose.js'], $spec['rgraph']);
+        $this->assertSame('Rose', $spec['charts'][0]['type']);
+        $this->assertStringContainsString('<canvas id="' . $matches[1] . '-primary"', $html);
+
+        $amdjscode = new \ReflectionProperty($PAGE->requires, 'amdjscode');
+        $amd = implode("\n", $amdjscode->getValue($PAGE->requires));
+        $this->assertStringContainsString('amd.init("' . $matches[1] . '");', $amd);
+
+        $jsincludes = new \ReflectionProperty($PAGE->requires, 'jsincludes');
+        $this->assertStringNotContainsString('RGraph', json_encode(array_map(
+            fn(array $urls) => array_keys($urls),
+            $jsincludes->getValue($PAGE->requires)
+        )));
     }
 }

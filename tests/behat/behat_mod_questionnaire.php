@@ -700,6 +700,31 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Checks that RGraph has drawn on the page's feedback chart canvases, not just that they exist.
+     *
+     * @Then /^the questionnaire feedback chart should be drawn$/
+     */
+    public function the_questionnaire_feedback_chart_should_be_drawn(): void {
+        $js = <<<'JS'
+            (function() {
+                var canvases = document.querySelectorAll('canvas[id^="questionnaire-chart-"]');
+                if (!canvases.length) {
+                    return false;
+                }
+                return Array.prototype.every.call(canvases, function(canvas) {
+                    var blank = document.createElement('canvas');
+                    blank.width = canvas.width;
+                    blank.height = canvas.height;
+                    return canvas.toDataURL() !== blank.toDataURL();
+                });
+            })()
+        JS;
+        if (!$this->evaluate_script($js)) {
+            throw new ExpectationException('The feedback chart has not been drawn', $this->getSession());
+        }
+    }
+
+    /**
      * Get a questionnaire by name.
      *
      * @param string $name questionnaire name.
