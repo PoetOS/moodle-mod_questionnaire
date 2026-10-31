@@ -311,6 +311,8 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
     /**
      * For the owner of a public survey, deleting all data in its context removes its own responses, including
      * saved drafts, and leaves other courses' responses to the survey alone.
+     *
+     * @covers \mod_questionnaire\privacy\provider::delete_data_for_all_users_in_context
      */
     public function test_delete_data_for_all_users_in_context_public_survey_owner(): void {
         global $DB;
@@ -326,6 +328,8 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
     /**
      * For the owner of a public survey, deleting one user's data removes their responses there, including saved
      * drafts, and nothing in other courses or of other users.
+     *
+     * @covers \mod_questionnaire\privacy\provider::delete_data_for_user
      */
     public function test_delete_data_for_user_public_survey_owner(): void {
         global $DB;
