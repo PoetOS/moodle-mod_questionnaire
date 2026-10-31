@@ -128,7 +128,7 @@ switch ($action) {
         if (!$questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         }
-        // The chart_renderer queues RGraph scripts on $PAGE itself when build_scoreboard
+        // The mod_questionnaire/chart module loads RGraph itself when build_scoreboard
         // emits a chart, so no preload needed here.
         $resps = $questionnaire->get_responses($userid);
 
