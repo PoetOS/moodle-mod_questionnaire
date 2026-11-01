@@ -259,7 +259,13 @@ class question_manager implements \renderable, \templatable {
             if (empty($duration)) {
                 $timedeletedhtml = get_string('recylebindisabled', 'questionnaire');
             } else {
-                $timedeletedhtml = get_string('timedeletednext7days', 'questionnaire', $duration);
+                // The question is permanently deleted once the duration has passed since it was moved to the bin.
+                $deletiontime = (int)$question->deleted() + (int)$duration;
+                $timedeletedhtml = get_string(
+                    'timedeletednext7days',
+                    'questionnaire',
+                    userdate($deletiontime, get_string('strftimedaydate', 'langconfig'))
+                );
             }
 
             $rows[] = [
