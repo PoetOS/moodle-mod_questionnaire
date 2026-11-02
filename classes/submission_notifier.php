@@ -181,11 +181,12 @@ class submission_notifier {
         $responses = $this->questionnaire->responses()->get_full_submission_for_export($rid);
         $message = '';
         foreach ($responses as $response) {
-            $message .= html_to_text(format_string($response->questionname)) . "<br />\n";
-            $message .= get_string('question') . ': ' . html_to_text(format_string($response->questiontext)) . "<br />\n";
+            // Html_to_text() decodes entities, so its plain text is escaped again before going into the HTML body.
+            $message .= format_string($response->questionname) . "<br />\n";
+            $message .= get_string('question') . ': ' . s(html_to_text($response->questiontext)) . "<br />\n";
             $message .= get_string('answers', 'questionnaire') . ":<br />\n";
             foreach ($response->answers as $answer) {
-                $message .= html_to_text($answer) . "<br />\n";
+                $message .= s(html_to_text($answer)) . "<br />\n";
             }
             $message .= "<br />\n";
         }
