@@ -51,7 +51,7 @@ class edit_question_form extends \moodleform {
 
         // Each question can provide its own form elements to the provided form, or use the default ones.
         if (!$question->edit_form($this, $questionnaire)) {
-            throw new \moodle_exception('Question type had an unknown error in the edit_form method.', 'mod_questionnaire');
+            throw new \coding_exception('Question type had an unknown error in the edit_form method.');
         }
     }
 

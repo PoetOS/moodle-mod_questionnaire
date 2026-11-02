@@ -141,7 +141,7 @@ class radio extends question {
                 if (isset($odata)) {
                     $radio->ovalue = format_string(stripslashes($odata));
                 }
-                $radio->olabel = 'Text for ' . $this->format_content($othertext);
+                $radio->olabel = get_string('othertextfor', 'questionnaire', $this->format_content($othertext));
                 if (!empty($this->qlegend)) {
                     $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
                     $radio->aolabel = strip_tags("{$this->qlegend} {$radio->olabel}");
