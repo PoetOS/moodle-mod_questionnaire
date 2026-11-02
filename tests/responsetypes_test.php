@@ -491,4 +491,65 @@ final class responsetypes_test extends \advanced_testcase {
         $this->assertEmpty($boolresponseresult1);
         $this->assertEmpty($boolresponseresult2);
     }
+
+    /**
+     * Radio "other" text with markup is saved, cleaned, instead of failing validation.
+     *
+     * @covers \mod_questionnaire\local\response\single::insert_response
+     */
+    public function test_radio_other_response_with_markup_is_cleaned(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $choicedata = [(object)['content' => 'One', 'value' => 1], (object)['content' => '!other=Something else', 'value' => 2]];
+        $questionnaire = $generator->create_test_questionnaire(
+            $this->getDataGenerator()->create_course(),
+            QUESRADIO,
+            ['content' => 'Select one'],
+            $choicedata
+        );
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
+        $cid = array_key_last($question->choices);
+        $vals = ['q' . $question->id() => $cid,
+            'q' . $question->id() . \mod_questionnaire\local\question\choice::id_other_choice_name($cid) =>
+                '<b>Forty</b><script>alert(1)</script>'];
+
+        $response = $generator->create_question_response($questionnaire, $question, $vals, 2);
+
+        $other = $DB->get_field('questionnaire_response_other', 'response', ['responseid' => $response->id], MUST_EXIST);
+        $this->assertSame('<b>Forty</b>', $other);
+    }
+
+    /**
+     * Rate "other" text is cleaned like every other response, and a lone '<' no longer fails validation.
+     *
+     * @covers \mod_questionnaire\local\response\rank::insert_response
+     */
+    public function test_rate_other_response_is_cleaned(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $choicedata = [(object)['content' => 'Speed', 'value' => 1], (object)['content' => '!other=Else', 'value' => 2]];
+        $questionnaire = $generator->create_test_questionnaire(
+            $this->getDataGenerator()->create_course(),
+            QUESRATE,
+            ['content' => 'Rate these', 'length' => 5, 'precise' => 0],
+            $choicedata
+        );
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
+        $cid = array_key_last($question->choices);
+        $rid = \mod_questionnaire\local\response\response::create($questionnaire->id(), 2)->id();
+
+        $question->insert_response((object)[
+            'rid' => $rid,
+            'q' . $question->id() . '_' . $cid => '3',
+            $cid . '_qother' => 'a<b <script>alert(1)</script>',
+        ]);
+
+        $other = $DB->get_field('questionnaire_response_other', 'response', ['responseid' => $rid], MUST_EXIST);
+        $this->assertSame(clean_text('a<b <script>alert(1)</script>'), $other);
+        $this->assertStringNotContainsString('<script', $other);
+    }
 }
