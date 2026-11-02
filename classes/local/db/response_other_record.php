@@ -50,7 +50,8 @@ class response_other_record extends \core\persistent {
                 'default' => 0,
             ],
             'response' => [
-                'type' => PARAM_TEXT,
+                // Cleaned with clean_text() when saved, as text responses are; PARAM_TEXT would reject that markup.
+                'type' => PARAM_RAW,
                 'null' => NULL_ALLOWED,
                 'default' => null,
             ],

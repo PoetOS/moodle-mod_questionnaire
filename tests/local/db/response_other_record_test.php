@@ -52,4 +52,18 @@ final class response_other_record_test extends \advanced_testcase {
         $this->assertCount(2, response_other_record::get_for_response($rid));
         $this->assertCount(0, response_other_record::get_for_response(99999));
     }
+
+    /**
+     * Cleaned answer text that keeps markup, or holds a lone '<', passes validation and is saved as given.
+     */
+    public function test_create_accepts_cleaned_markup(): void {
+        $this->resetAfterTest();
+        foreach (['<b>bold</b> answer', clean_text('a<b')] as $text) {
+            $record = new response_other_record(0, (object)[
+                'responseid' => 15001, 'questionid' => 1, 'choiceid' => 5, 'response' => $text,
+            ]);
+            $record->create();
+            $this->assertSame($text, (new response_other_record($record->get('id')))->get('response'));
+        }
+    }
 }

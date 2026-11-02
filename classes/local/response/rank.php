@@ -141,7 +141,7 @@ class rank extends responsetype {
                     $otherrec->set('responseid', $response->id());
                     $otherrec->set('questionid', $this->question->id());
                     $otherrec->set('choiceid', $answer->choiceid);
-                    $otherrec->set('response', $responsedata->{$answer->choiceid . '_qother'});
+                    $otherrec->set('response', clean_text($responsedata->{$answer->choiceid . '_qother'}));
                     $otherrec->create();
                 }
             }
