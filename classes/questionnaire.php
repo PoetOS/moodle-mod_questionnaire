@@ -912,13 +912,7 @@ class questionnaire {
             $questionnairenode->add_node($node, $beforekey);
         }
 
-        $canviewgroups = true;
-        $groupmode = groups_get_activity_groupmode($cm, $course);
-        if ($groupmode == 1) {
-            $canviewgroups = groups_has_membership($cm, $USER->id);
-        }
-        $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
-        if ($this->capabilities()->can_view_single_response() && ($canviewallgroups || $canviewgroups)) {
+        if ($this->capabilities()->can_view_nonrespondents()) {
             $url = '/mod/questionnaire/show_nonrespondents.php';
             $node = \navigation_node::create(
                 get_string('show_nonrespondents', 'questionnaire'),

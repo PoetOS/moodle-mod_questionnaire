@@ -47,6 +47,9 @@ $context = $questionnaire->context();
 
 require_course_login($course, true, $cm);
 require_capability('mod/questionnaire:viewsingleresponse', $context);
+if (!$questionnaire->capabilities()->can_view_nonrespondents()) {
+    throw new required_capability_exception($context, 'moodle/site:accessallgroups', 'nopermissions', '');
+}
 
 $PAGE->set_url(new moodle_url('/mod/questionnaire/show_nonrespondents.php', ['id' => $cm->id]));
 $PAGE->set_heading(format_string($course->fullname));

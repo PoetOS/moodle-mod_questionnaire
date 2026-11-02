@@ -786,4 +786,42 @@ final class capabilities_test extends \advanced_testcase {
         $this->assertFalse($capabilities->can_print(0));
         $this->assertTrue($capabilities->can_print($rids['a']));
     }
+
+    /**
+     * The non-respondents page needs the individual response capability and, in separate groups without access to
+     * all groups, membership of a group.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_nonrespondents
+     */
+    public function test_can_view_nonrespondents(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course, $groupa] = $this->make_group_responses(SEPARATEGROUPS);
+        $dg = $this->getDataGenerator();
+
+        $grouped = $dg->create_and_enrol($course, 'teacher');
+        $dg->create_group_member(['groupid' => $groupa->id, 'userid' => $grouped->id]);
+        $this->setUser($grouped);
+        $this->assertTrue($questionnaire->capabilities()->can_view_nonrespondents());
+
+        $this->setUser($dg->create_and_enrol($course, 'teacher'));
+        $this->assertFalse($questionnaire->capabilities()->can_view_nonrespondents());
+
+        $this->setUser($dg->create_and_enrol($course, 'editingteacher'));
+        $this->assertTrue($questionnaire->capabilities()->can_view_nonrespondents());
+
+        $this->setUser($dg->create_and_enrol($course, 'student'));
+        $this->assertFalse($questionnaire->capabilities()->can_view_nonrespondents());
+    }
+
+    /**
+     * Outside separate groups, staff in no group may see the non-respondents page.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_nonrespondents
+     */
+    public function test_can_view_nonrespondents_visible_groups(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course] = $this->make_group_responses(VISIBLEGROUPS);
+        $this->setUser($this->getDataGenerator()->create_and_enrol($course, 'teacher'));
+        $this->assertTrue($questionnaire->capabilities()->can_view_nonrespondents());
+    }
 }

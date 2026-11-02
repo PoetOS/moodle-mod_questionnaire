@@ -211,6 +211,26 @@ class capabilities {
     }
 
     /**
+     * True if the current user may see the non-respondents page.
+     *
+     * Needs the individual response capability. In separate groups, a user without access to all groups must belong
+     * to a group, or the page would list everyone in the course.
+     *
+     * @return bool
+     */
+    public function can_view_nonrespondents(): bool {
+        global $USER;
+        if (!$this->can_view_single_response()) {
+            return false;
+        }
+        $cm = $this->questionnaire->coursemodule();
+        if (groups_get_activity_groupmode($cm, $this->questionnaire->course()) != SEPARATEGROUPS || $this->can_view_all_groups()) {
+            return true;
+        }
+        return groups_has_membership($cm, $USER->id);
+    }
+
+    /**
      * True if the current user may see responses filtered to the given group.
      *
      * The group must belong to this course. In separate groups, a user without access to all groups must also be a
