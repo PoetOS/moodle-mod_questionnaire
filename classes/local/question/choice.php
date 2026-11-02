@@ -42,6 +42,12 @@ class choice {
     /** @var string $value Optional value assigned to this choice. */
     public $value;
 
+    /** @var string|null $choicefieldkey Mobile app field key for this choice, set for check boxes. */
+    public $choicefieldkey = null;
+
+    /** @var string|null $otherchoicekey Mobile app field key for an "other" choice's text. */
+    public $otherchoicekey = null;
+
     /**
      * Choice constructor.
      * @param int $id
