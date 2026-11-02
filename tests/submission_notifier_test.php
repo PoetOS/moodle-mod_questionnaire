@@ -225,4 +225,36 @@ final class submission_notifier_test extends \advanced_testcase {
         $this->assertEquals($teacher->id, $messages[0]->useridto);
         $messagesink->close();
     }
+
+    /**
+     * A full submission notification shows entity-escaped answer text as text, never as live markup.
+     */
+    public function test_notify_full_message_escapes_answers(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $generator = $this->getDataGenerator();
+        $qgenerator = $generator->get_plugin_generator('mod_questionnaire');
+
+        $course = $generator->create_course();
+        $questionnaire = $qgenerator->create_test_questionnaire($course, QUESESSAY, ['content' => 'Say something']);
+        $DB->set_field('questionnaire', 'notifications', 2, ['id' => $questionnaire->id()]);
+        $student = $generator->create_and_enrol($course, 'student');
+        $teacher = $generator->create_and_enrol($course, 'editingteacher');
+
+        $questions = $questionnaire->questions();
+        $payload = '&lt;img src=x onerror=alert(1)&gt;';
+        $response = $qgenerator->create_question_response($questionnaire, reset($questions), $payload, $student->id);
+
+        $this->setUser($student);
+        $messagesink = $this->redirectMessages();
+        (new submission_notifier(questionnaire::from_instanceid($questionnaire->id())))->notify($response->id);
+        $messages = $messagesink->get_messages();
+        $messagesink->close();
+
+        $this->assertCount(1, $messages);
+        $this->assertEquals($teacher->id, $messages[0]->useridto);
+        $this->assertStringNotContainsString('<img', $messages[0]->fullmessagehtml);
+        $this->assertStringContainsString('&lt;img src=x onerror=alert(1)&gt;', $messages[0]->fullmessagehtml);
+        $this->assertStringContainsString('Say something', $messages[0]->fullmessagehtml);
+    }
 }
