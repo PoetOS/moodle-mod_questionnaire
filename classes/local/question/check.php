@@ -137,7 +137,7 @@ class check extends question {
             $checkbox->name = 'q' . $this->id() . '[' . $id . ']';
             $checkbox->value = $id;
             $checkbox->id = 'checkbox_' . $id;
-            $checkbox->label = $this->format_content($contents->text) . $contents->image;
+            $checkbox->label = $this->format_content($contents->text . $contents->image);
             if ($checked) {
                 $checkbox->checked = $checked;
             }
@@ -191,7 +191,7 @@ class check extends question {
                     $chobj->othercontent = (!empty($oresp) ? htmlspecialchars($oresp) : '&nbsp;');
                 }
                 $chobj->name = $id . $uniquetag++;
-                $chobj->content = (($othertext === '') ? $id : $othertext);
+                $chobj->content = (($othertext === '') ? $id : $this->format_content($othertext));
             }
             if (!empty($this->qlegend)) {
                 $chobj->alabel = strip_tags("{$this->qlegend} {$chobj->content}");

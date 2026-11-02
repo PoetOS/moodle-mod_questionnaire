@@ -117,7 +117,7 @@ class radio extends question {
                     $value = ' (' . $choice->value . ') ';
                 }
                 $contents = question::parse_choice_content($choice->content);
-                $radio->label = $value . $this->format_content($contents->text) . $contents->image;
+                $radio->label = $value . $this->format_content($contents->text . $contents->image);
                 if (!empty($this->qlegend)) {
                     $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
                 }
@@ -215,7 +215,7 @@ class radio extends question {
                 }
             }
             if ($choice->is_other_choice()) {
-                $chobj->content = $choice->other_choice_display();
+                $chobj->content = $this->format_content($choice->other_choice_display());
             } else {
                 $chobj->content = ($choice->content === '' ? $id : $this->format_content($choice->content));
             }

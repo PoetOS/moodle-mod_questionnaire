@@ -642,7 +642,8 @@ abstract class question {
      * Examines the content of a possible answer from radio button, check box, or rate question
      * and returns an object with the following properties:
      * - text:    displayable text component
-     * - image:   full img tag if an image was embedded, or empty string
+     * - image:   img tag markup if an image was embedded, or empty string; it is raw author markup,
+     *            so show it only through format_content() together with the text
      * - modname: named-modality prefix (before '::'), or empty string
      * - title:   image title/alt text, or empty string
      *
@@ -2148,7 +2149,7 @@ abstract class question {
             foreach ($this->choices as $choice) {
                 $choices[$cnum] = clone($choice);
                 $contents = self::parse_choice_content($choice->content);
-                $choices[$cnum]->content = $this->format_content($contents->text) . $contents->image;
+                $choices[$cnum]->content = $this->format_content($contents->text . $contents->image);
                 $cnum++;
             }
         }
