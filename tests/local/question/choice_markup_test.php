@@ -73,6 +73,24 @@ final class choice_markup_test extends \advanced_testcase {
     }
 
     /**
+     * The radio "other" text box is labelled from a language string around the cleaned label.
+     */
+    public function test_radio_other_text_label_uses_language_string(): void {
+        $this->resetAfterTest();
+        $question = $this->build_question(QUESRADIO);
+
+        $choicetags = $this->invoke($question, 'question_survey_display', [new response(), [], false]);
+        $olabels = array_values(array_filter(array_map(fn($element) => $element->choice->olabel ?? null, $choicetags->qelements)));
+
+        $this->assertCount(1, $olabels);
+        $this->assertSame(
+            get_string('othertextfor', 'questionnaire', $question->format_content('<b onmouseover="alert(2)">Something else</b>')),
+            $olabels[0]
+        );
+        $this->assert_cleaned($olabels[0]);
+    }
+
+    /**
      * Response views clean the choice image and the "other" label.
      *
      * @dataProvider types_provider

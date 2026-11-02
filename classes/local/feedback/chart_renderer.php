@@ -278,7 +278,8 @@ class chart_renderer {
      * @return string
      */
     private static function canvas(string $id, int $width, int $height): string {
-        return '<canvas id="' . $id . '" width="' . $width . '" height="' . $height . '">[No canvas support]</canvas>';
+        return '<canvas id="' . $id . '" width="' . $width . '" height="' . $height . '">' .
+            get_string('nocanvassupport', 'questionnaire') . '</canvas>';
     }
 
     /**

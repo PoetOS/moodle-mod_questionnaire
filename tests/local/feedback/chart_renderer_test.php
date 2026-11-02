@@ -60,7 +60,7 @@ final class chart_renderer_test extends \advanced_testcase {
         $this->assertStringContainsString('<canvas', $html);
         $this->assertStringContainsString('-primary', $html);
         $this->assertStringContainsString('-secondary', $html);
-        $this->assertStringContainsString('[No canvas support]', $html);
+        $this->assertStringContainsString(get_string('nocanvassupport', 'questionnaire'), $html);
     }
 
     /**
