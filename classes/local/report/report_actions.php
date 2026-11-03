@@ -151,6 +151,7 @@ class report_actions {
                 'context' => $this->questionnaire->context(),
                 'courseid' => $this->questionnaire->courseid(),
                 'relateduserid' => $responseuserid,
+                'anonymous' => $this->questionnaire->is_anonymous(),
             ]);
             $event->trigger();
 

@@ -192,4 +192,57 @@ final class report_actions_test extends \advanced_testcase {
         (new report_actions($questionnaire, $renderer))
             ->delete_all_responses(0, 0, []);
     }
+
+    /**
+     * Deleting a response of an anonymous questionnaire logs response_deleted as anonymous, so log reports hide it.
+     *
+     * @dataProvider anonymous_provider
+     * @param string $respondenttype
+     * @param bool $anonymous
+     */
+    public function test_delete_response_event_anonymity(string $respondenttype, bool $anonymous): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $questionnaire = $this->getDataGenerator()
+            ->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id, 'respondenttype' => $respondenttype]);
+        $PAGE->set_context($questionnaire->context());
+        $rid = $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaire->id(),
+            'userid' => 2,
+            'submitted' => time(),
+            'complete' => 'y',
+            'grade' => 0,
+        ]);
+
+        $sink = $this->redirectEvents();
+        try {
+            (new report_actions($questionnaire, $PAGE->get_renderer('mod_questionnaire')))->delete_response($rid);
+            $this->fail('redirect() should have terminated the call');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('redirecterrordetected', $e->errorcode);
+        }
+        $events = array_values(array_filter(
+            $sink->get_events(),
+            fn($e) => $e instanceof \mod_questionnaire\event\response_deleted
+        ));
+
+        $this->assertCount(1, $events);
+        $this->assertSame($anonymous, (bool)$events[0]->anonymous);
+    }
+
+    /**
+     * Respondent types and whether their events are anonymous.
+     *
+     * @return array
+     */
+    public static function anonymous_provider(): array {
+        return [
+            'anonymous' => ['anonymous', true],
+            'named' => ['fullname', false],
+        ];
+    }
 }

@@ -80,6 +80,75 @@ final class report_downloader_test extends \advanced_testcase {
     }
 
     /**
+     * In an anonymous questionnaire, neither download page accepts a filter on another user's responses.
+     */
+    public function test_anonymous_questionnaire_refuses_other_user_filter(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $questionnaire = $this->anonymous_questionnaire();
+        $student = $this->getDataGenerator()->create_and_enrol($questionnaire->course(), 'student');
+        $downloader = new report_downloader($questionnaire, $PAGE->get_renderer('mod_questionnaire'));
+
+        foreach (['show_download_options', 'download_responses'] as $method) {
+            try {
+                if ($method === 'show_download_options') {
+                    $downloader->show_download_options(page::report(), 0, 0, [], $student->id);
+                } else {
+                    $downloader->download_responses(page::report(), 0, $student->id, new download_options('csv'));
+                }
+                $this->fail("{$method} should refuse another user's filter.");
+            } catch (\moodle_exception $e) {
+                $this->assertSame('nopermissions', $e->errorcode, $method);
+            }
+        }
+    }
+
+    /**
+     * In an anonymous questionnaire, a user may still download their own responses.
+     */
+    public function test_anonymous_questionnaire_allows_own_user_filter(): void {
+        global $PAGE, $USER;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('allowemailreporting', 0, 'questionnaire');
+
+        $questionnaire = $this->anonymous_questionnaire();
+        try {
+            (new report_downloader($questionnaire, $PAGE->get_renderer('mod_questionnaire')))
+                ->download_responses(page::report(), 0, $USER->id, new download_options('csv', emailreport: true));
+            $this->fail('Expected a redirect back to the download options.');
+        } catch (\moodle_exception $e) {
+            // The redirect for having no email recipients comes after the filter check.
+            $this->assertSame('redirecterrordetected', $e->errorcode);
+        }
+    }
+
+    /**
+     * In a named questionnaire, the user filter is not restricted.
+     */
+    public function test_named_questionnaire_allows_other_user_filter(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('allowemailreporting', 0, 'questionnaire');
+
+        $course = $this->getDataGenerator()->create_course();
+        $questionnaire = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id, 'respondenttype' => 'fullname']);
+        $PAGE->set_context($questionnaire->context());
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        try {
+            (new report_downloader($questionnaire, $PAGE->get_renderer('mod_questionnaire')))
+                ->download_responses(page::report(), 0, $student->id, new download_options('csv', emailreport: true));
+            $this->fail('Expected a redirect back to the download options.');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('redirecterrordetected', $e->errorcode);
+        }
+    }
+
+    /**
      * download_responses redirects to dwnpg when "email report" is selected but no
      * recipients are specified (allowemailreporting off, no roles, no extras).
      */
@@ -204,5 +273,19 @@ final class report_downloader_test extends \advanced_testcase {
         // Temp file cleaned up.
         $tempfiles = glob(make_temp_directory('mod_questionnaire') . '/qreport*');
         $this->assertEmpty($tempfiles);
+    }
+
+    /**
+     * An anonymous questionnaire in a new course, with the page context set to it.
+     *
+     * @return \mod_questionnaire\questionnaire
+     */
+    private function anonymous_questionnaire(): \mod_questionnaire\questionnaire {
+        global $PAGE;
+        $course = $this->getDataGenerator()->create_course();
+        $questionnaire = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id, 'respondenttype' => 'anonymous']);
+        $PAGE->set_context($questionnaire->context());
+        return $questionnaire;
     }
 }
