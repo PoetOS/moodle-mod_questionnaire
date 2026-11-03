@@ -552,4 +552,44 @@ final class responsetypes_test extends \advanced_testcase {
         $this->assertSame(clean_text('a<b <script>alert(1)</script>'), $other);
         $this->assertStringNotContainsString('<script', $other);
     }
+
+    /**
+     * Rating values the form does not offer are dropped, from the web form and from the app.
+     *
+     * @covers \mod_questionnaire\local\response\rank::answers_from_webform
+     * @covers \mod_questionnaire\local\response\rank::answers_from_appdata
+     */
+    public function test_rate_out_of_range_values_are_dropped(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $choicedata = [(object)['content' => 'Speed', 'value' => 1], (object)['content' => 'Price', 'value' => 2]];
+        $questionnaire = $generator->create_test_questionnaire(
+            $this->getDataGenerator()->create_course(),
+            QUESRATE,
+            ['content' => 'Rate these', 'length' => 5, 'precise' => 0],
+            $choicedata
+        );
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
+        [$cid1, $cid2] = array_keys($question->choices);
+        $rid = \mod_questionnaire\local\response\response::create($questionnaire->id(), 2)->id();
+
+        $question->insert_response((object)[
+            'rid' => $rid,
+            'q' . $question->id() . '_' . $cid1 => '99999',
+            'q' . $question->id() . '_' . $cid2 => '3',
+        ]);
+
+        $ranks = $DB->get_records_menu('questionnaire_response_rank', ['responseid' => $rid], '', 'choiceid, rankvalue');
+        $this->assertEquals([$cid2 => 3], $ranks);
+
+        $answers = \mod_questionnaire\local\response\rank::answers_from_appdata(
+            (object)['rid' => $rid, 'q' . $question->id() => [$cid1 => 0, $cid2 => 4]],
+            $question
+        );
+        $this->assertCount(1, $answers);
+        $this->assertEquals($cid2, $answers[0]->choiceid);
+        $this->assertEquals(4, $answers[0]->value);
+    }
 }

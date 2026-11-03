@@ -26,6 +26,22 @@ namespace mod_questionnaire\local\response;
  */
 class slider extends numericaltext {
     /**
+     * Provide an array of answer objects from web form data for the question, keeping only values the slider can produce.
+     *
+     * The app's data comes through here too, by way of responsetype::answers_from_appdata().
+     *
+     * @param \stdClass $responsedata All of the responsedata as an object.
+     * @param \mod_questionnaire\local\question\slider $question
+     * @return array \mod_questionnaire\local\response\answer\answer An array of answer objects.
+     */
+    public static function answers_from_webform($responsedata, $question) {
+        return array_values(array_filter(
+            parent::answers_from_webform($responsedata, $question),
+            fn($answer) => $question->is_valid_value($answer->value)
+        ));
+    }
+
+    /**
      * Return an array of answer objects by question for the given response id.
      * THIS SHOULD REPLACE response_select.
      *

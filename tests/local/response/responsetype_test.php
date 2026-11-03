@@ -615,6 +615,10 @@ final class responsetype_test extends \advanced_testcase {
             (object)['content' => 'Quality', 'value' => null],
         ];
         [$questionnaire, $question, $rid] = $this->build_data_fixture(QUESRATE, $choices);
+        // Only a scale with an N/A column offers N/A.
+        $DB->set_field('questionnaire_question', 'precise', 1, ['id' => $question->id()]);
+        $questions = \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id())->questions();
+        $question = reset($questions);
 
         $choiceidsbycontent = [];
         foreach ($question->choices as $cid => $choice) {
@@ -1198,5 +1202,22 @@ final class responsetype_test extends \advanced_testcase {
         ]);
 
         $this->assertStringContainsString('Two', json_encode($rt->display_results([$rid])));
+    }
+
+    /**
+     * slider::answers_from_webform() keeps a value inside the slider's range and drops one outside it, for the
+     * web form and for the app.
+     */
+    public function test_slider_answers_from_webform_drops_out_of_range_values(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        [, $question] = $this->build_data_fixture(QUESSLIDER);
+        $question->insert_extradata(json_encode(['minrange' => 1, 'maxrange' => 10, 'startingvalue' => 5, 'stepvalue' => 1]));
+        $name = 'q' . $question->id();
+
+        $this->assertCount(1, slider::answers_from_webform((object)['rid' => 1, $name => '7'], $question));
+        $this->assertSame([], slider::answers_from_webform((object)['rid' => 1, $name => '100000'], $question));
+        $this->assertSame([], slider::answers_from_appdata((object)['rid' => 1, $name => ['0']], $question));
+        $this->assertCount(1, slider::answers_from_appdata((object)['rid' => 1, $name => ['10']], $question));
     }
 }

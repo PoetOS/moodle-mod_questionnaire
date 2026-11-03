@@ -65,6 +65,10 @@ class rank extends responsetype {
             } else {
                 $rank = intval($other);
             }
+            // A value the form does not offer could only come from a tampered post, and would skew the averages.
+            if (!$question->is_valid_value($rank)) {
+                continue;
+            }
             $record = new \stdClass();
             $record->responseid = $responsedata->rid;
             $record->questionid = $question->id();
@@ -97,6 +101,9 @@ class rank extends responsetype {
                         if ($nameddegreevalue !== false) {
                             $choicevalue = $nameddegreevalue;
                         }
+                    }
+                    if (!$question->is_valid_value($choicevalue)) {
+                        continue;
                     }
                     $record->value = $choicevalue;
                     $answers[] = answer\answer::create_from_data($record);
