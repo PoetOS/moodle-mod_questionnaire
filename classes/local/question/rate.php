@@ -142,6 +142,30 @@ class rate extends question {
     }
 
     /**
+     * True if the value is one the rating form offers: a scale degree (or its named degree key), or -1 for N/A.
+     *
+     * @param mixed $value Posted rating value.
+     * @return bool
+     */
+    public function is_valid_value($value): bool {
+        if (!is_numeric($value) || (floor($value) != $value)) {
+            return false;
+        }
+        $value = (int)$value;
+        if ($value === -1) {
+            return $this->has_na_column();
+        }
+        // The same values question_survey_display() puts on the radio buttons.
+        $degreevalues = array_keys($this->nameddegrees);
+        for ($j = 1; $j <= $this->length(); $j++) {
+            if ($value === (int)($degreevalues[$j - 1] ?? $j)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Return true if rate scale type is set to "No duplicate choices".
      * @return bool
      */

@@ -39,6 +39,7 @@ use mod_questionnaire\local\response\response;
  * @group mod_questionnaire
  * @covers \mod_questionnaire\local\question\rate::question_survey_display
  * @covers \mod_questionnaire\local\question\rate::response_survey_display
+ * @covers \mod_questionnaire\local\question\rate::is_valid_value
  */
 final class rate_test extends \advanced_testcase {
     /**
@@ -213,5 +214,39 @@ final class rate_test extends \advanced_testcase {
 
         $this->assertSame(1, $resptags->osgood);
         $this->assertSame('45%', $resptags->sidecolwidth);
+    }
+
+    /**
+     * Only the values the rating form offers are valid.
+     *
+     * @dataProvider is_valid_value_provider
+     * @param int $precise Rate scale type.
+     * @param string $extradata Named degrees JSON, or empty.
+     * @param array $valid Values that must be accepted.
+     * @param array $invalid Values that must be refused.
+     */
+    public function test_is_valid_value(int $precise, string $extradata, array $valid, array $invalid): void {
+        $this->resetAfterTest();
+        $question = $this->build_rate_question($precise, ['One', 'Two'], $extradata);
+        foreach ($valid as $value) {
+            $this->assertTrue($question->is_valid_value($value), var_export($value, true));
+        }
+        foreach ($invalid as $value) {
+            $this->assertFalse($question->is_valid_value($value), var_export($value, true));
+        }
+    }
+
+    /**
+     * Scale types with the values they accept and refuse. The questions have a length of 5.
+     *
+     * @return array
+     */
+    public static function is_valid_value_provider(): array {
+        return [
+            'normal' => [0, '', [1, '3', 5], [0, 6, -1, 99999, '2.5', 'abc', '']],
+            'na column' => [1, '', [1, 5, -1, '-1'], [0, 6, -2]],
+            'osgood' => [3, '', [1, 5], [0, 6, -1]],
+            'named degrees' => [0, '{"1":"Low","3":"Mid","9":"High"}', [1, 3, 9], [0, 2, 10, -1]],
+        ];
     }
 }

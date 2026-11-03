@@ -86,6 +86,29 @@ class slider extends question {
     }
 
     /**
+     * True if the value is one the slider can produce: inside the configured range and on a step from the minimum.
+     *
+     * A slider saved without a range accepts any number.
+     *
+     * @param mixed $value Posted slider value.
+     * @return bool
+     */
+    public function is_valid_value($value): bool {
+        if (!is_numeric($value)) {
+            return false;
+        }
+        $ranges = json_decode($this->extradata() ?? '');
+        if (!isset($ranges->minrange, $ranges->maxrange)) {
+            return true;
+        }
+        if (($value < $ranges->minrange) || ($value > $ranges->maxrange)) {
+            return false;
+        }
+        $step = $ranges->stepvalue ?? 0;
+        return ($step <= 0) || (fmod($value - $ranges->minrange, $step) == 0);
+    }
+
+    /**
      * Get the maximum score possible for feedback if appropriate. Override if default behaviour is not correct.
      * @return int | boolean
      */
