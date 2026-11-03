@@ -129,15 +129,16 @@ final class csvexport_test extends \advanced_testcase {
     }
 
     /**
-     * Anonymous exports keep the user detail columns but leave them empty; named exports fill them.
+     * Anonymous exports keep the user detail and submission time columns but leave them empty; named exports fill them.
      *
      * @dataProvider user_details_provider
      * @param bool $anonymous
      */
     public function test_csvexport_user_details(bool $anonymous): void {
+        global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        set_config('downloadoptions', 'response,institution,department,group,useridnumber,fullname', 'questionnaire');
+        set_config('downloadoptions', 'response,submitted,institution,department,group,useridnumber,fullname', 'questionnaire');
 
         $dg = $this->getDataGenerator();
         $course = $dg->create_course();
@@ -162,7 +163,11 @@ final class csvexport_test extends \advanced_testcase {
         ]);
         $group = $dg->create_group(['courseid' => $course->id, 'name' => 'Group Z']);
         $dg->create_group_member(['groupid' => $group->id, 'userid' => $student->id]);
-        $generator->generate_response($questionnaire, $questionnaire->questions(), $student->id);
+        $response = $generator->generate_response($questionnaire, $questionnaire->questions(), $student->id);
+        $submitted = date(
+            get_string('strfdateformatcsv', 'questionnaire'),
+            $DB->get_field('questionnaire_response', 'submitted', ['id' => $response['id']])
+        );
 
         $output = $questionnaire->reporter()->generate_csv(0, '', '', 0, 0, 0);
 
@@ -171,7 +176,7 @@ final class csvexport_test extends \advanced_testcase {
             $this->assertContains(get_string($column), $output[0]);
         }
         $this->assertContains(get_string('useridnumber', 'questionnaire'), $output[0]);
-        foreach (['ID-777', 'Institution X', 'Department Y', 'Group Z'] as $detail) {
+        foreach (['ID-777', 'Institution X', 'Department Y', 'Group Z', $submitted] as $detail) {
             if ($anonymous) {
                 $this->assertNotContains($detail, $output[1]);
             } else {

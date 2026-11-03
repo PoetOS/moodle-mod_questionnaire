@@ -1218,7 +1218,8 @@ class reporter {
             array_push($positioned, $resprow->rid);
         }
         if (in_array('submitted', $options)) {
-            $submitted = date(get_string('strfdateformatcsv', 'questionnaire'), $resprow->submitted);
+            // The exact time can identify an anonymous respondent, so the HTML views leave it out too.
+            $submitted = $isanonymous ? '' : date(get_string('strfdateformatcsv', 'questionnaire'), $resprow->submitted);
             array_push($positioned, $submitted);
         }
         if (in_array('institution', $options)) {

@@ -74,6 +74,7 @@ class report_downloader {
         global $PAGE;
 
         require_capability('mod/questionnaire:downloadresponses', $this->questionnaire->context());
+        $this->require_user_filter_allowed($user);
 
         $course = $this->questionnaire->course();
         $instance = $this->questionnaire->id();
@@ -165,6 +166,7 @@ class report_downloader {
         global $CFG, $USER;
 
         require_capability('mod/questionnaire:downloadresponses', $this->questionnaire->context());
+        $this->require_user_filter_allowed($user);
 
         // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
         $name = clean_param($this->questionnaire->name(), PARAM_FILE);
@@ -206,6 +208,19 @@ class report_downloader {
     }
 
     // Private helpers.
+
+    /**
+     * Refuse a filter on someone else's responses in an anonymous questionnaire, as it would reveal their answers.
+     *
+     * @param int $user User filter (0 = all users).
+     * @return void
+     */
+    private function require_user_filter_allowed(int $user): void {
+        global $USER;
+        if ($user && $this->questionnaire->is_anonymous() && $user != $USER->id) {
+            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+        }
+    }
 
     /**
      * Render the dataformat output, save it to a temp file, email it to each user / extra
