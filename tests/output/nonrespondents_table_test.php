@@ -168,4 +168,43 @@ final class nonrespondents_table_test extends \advanced_testcase {
         $this->expectOutputString('');
         $table->add_user($student, false);
     }
+
+    /**
+     * Email shows only when the site lists it as an identity field, even for users who may see hidden fields.
+     */
+    public function test_email_column_follows_identity_fields(): void {
+        $this->resetAfterTest();
+        $questionnaire = $this->build_questionnaire();
+        $this->setUser($this->getDataGenerator()->create_and_enrol($this->course, 'editingteacher'));
+
+        set_config('showuseridentity', 'email');
+        $this->assertArrayHasKey('email', $this->build_table($questionnaire)->columns);
+
+        set_config('showuseridentity', '');
+        $this->assertArrayNotHasKey('email', $this->build_table($questionnaire)->columns);
+    }
+
+    /**
+     * City, country and last access are left out when the site hides them, unless the user may see hidden fields.
+     */
+    public function test_hidden_user_fields_need_capability(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $questionnaire = $this->build_questionnaire();
+        set_config('hiddenuserfields', 'city,lastaccess');
+
+        $this->setUser($this->getDataGenerator()->create_and_enrol($this->course, 'editingteacher'));
+        $columns = $this->build_table($questionnaire)->columns;
+        foreach (['city', 'country', 'lastaccess'] as $field) {
+            $this->assertArrayHasKey($field, $columns);
+        }
+
+        $role = $DB->get_field('role', 'id', ['shortname' => 'teacher']);
+        assign_capability('moodle/course:viewhiddenuserfields', CAP_PROHIBIT, $role, $questionnaire->context(), true);
+        $this->setUser($this->getDataGenerator()->create_and_enrol($this->course, 'teacher'));
+        $columns = $this->build_table($questionnaire)->columns;
+        $this->assertArrayNotHasKey('city', $columns);
+        $this->assertArrayNotHasKey('lastaccess', $columns);
+        $this->assertArrayHasKey('country', $columns);
+    }
 }
