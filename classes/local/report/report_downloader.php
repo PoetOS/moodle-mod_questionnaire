@@ -300,7 +300,8 @@ class report_downloader {
             $format->close_output();
             $output = ob_get_contents();
             $ext = $format->get_extension();
-            $filepath = make_temp_directory('mod_questionnaire') . '/' . $filename . $ext;
+            // A per-request directory keeps concurrent exports apart and is removed at shutdown, even if this request dies.
+            $filepath = make_request_directory() . '/' . $filename . $ext;
             $fp = fopen($filepath, 'wb');
             fwrite($fp, $output);
             fclose($fp);

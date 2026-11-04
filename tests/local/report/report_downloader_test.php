@@ -231,6 +231,10 @@ final class report_downloader_test extends \advanced_testcase {
 
         $sink = $this->redirectEmails();
 
+        // Another export's file at the old shared path must not be overwritten or removed.
+        $sharedpath = make_temp_directory('mod_questionnaire') . '/qreport.csv';
+        file_put_contents($sharedpath, 'another export');
+
         // A plain array, as download_responses() passes from generate_csv().
         $rows = [
             ['col1' => 'row1a', 'col2' => 'row1b'],
@@ -270,9 +274,9 @@ final class report_downloader_test extends \advanced_testcase {
         // Redirect message rendered (containing the configured "emailssent" lang string).
         $this->assertStringContainsString(get_string('emailssent', 'questionnaire'), $output);
 
-        // Temp file cleaned up.
-        $tempfiles = glob(make_temp_directory('mod_questionnaire') . '/qreport*');
-        $this->assertEmpty($tempfiles);
+        // The export was written elsewhere, leaving the shared temp directory alone.
+        $this->assertSame('another export', file_get_contents($sharedpath));
+        unlink($sharedpath);
     }
 
     /**
