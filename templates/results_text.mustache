@@ -29,16 +29,20 @@
 
     Example context (json):
     {
+        "tableid": 1,
+        "showdate": true,
         "responses": [
             {
                 "response": {
                     "respondent" : "User 1",
+                    "date": "1 November 2026, 10:00 AM",
                     "text": "Some text"
                 }
             },
             {
                 "response": {
                     "respondent" : "User 2",
+                    "date": "2 November 2026, 11:30 AM",
                     "text": "Some other text"
                 }
             }
@@ -75,6 +79,7 @@
                 <div class="frtlst">{{#str}} firstname {{/str}}/{{#str}} lastname {{/str}}</div>
                 {{/tableid}}
         </th>
+            {{#showdate}}
             {{#tableid}}
                 <th class="header c1 {{#tableid}}qn-handcursor{{/tableid}} desc" style="text-align:center;" scope="col" data-value="{{#str}} date {{/str}}">
                     {{#sortresponse}}
@@ -96,6 +101,7 @@
                     {{/sortresponse}}
                 </th>
             {{/tableid}}
+            {{/showdate}}
         <th class="header c2 lastcol" style="text-align:right;" scope="col">{{#str}} response, mod_questionnaire{{/str}}</th>
     </tr>
     </thead>
@@ -105,9 +111,11 @@
     {{#response}}
     <tr class="">
         <td class="cell c0" style="text-align:left;">{{{response.respondent}}}</td>
+        {{#showdate}}
         {{#tableid}}
             <td class="cell c1" style="text-align:center;">{{{response.date}}}</td>
         {{/tableid}}
+        {{/showdate}}
         <td class="cell c2 lastcol" style="text-align:right;">{{{response.text}}}</td>
     </tr>
     {{/response}}
@@ -118,10 +126,10 @@
 {{/responses.0}}
 {{#total}}
     <tr>
-        <td colspan={{#tableid}}"3"{{/tableid}}{{^tableid}}"2"{{/tableid}}><div class="tabledivider"></div></td>
+        <td colspan={{#showdate}}{{#tableid}}"3"{{/tableid}}{{^tableid}}"2"{{/tableid}}{{/showdate}}{{^showdate}}"2"{{/showdate}}><div class="tabledivider"></div></td>
     </tr>
     <tr class="lastrow">
-        <td class="cell c0" {{#tableid}} colspan="2"{{/tableid}} style="text-align:left;">
+        <td class="cell c0" {{#showdate}}{{#tableid}} colspan="2"{{/tableid}}{{/showdate}} style="text-align:left;">
             {{#str}} totalresponses, mod_questionnaire{{/str}}</td>
         <td class="cell c1 lastcol" style="text-align:right;">{{total}}</td>
     </tr>
