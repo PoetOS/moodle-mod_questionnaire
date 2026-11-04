@@ -276,11 +276,12 @@ class submission_notifier {
                     break;
                 case 6:
                     if ($this->questionnaire->respondenttype() != 'anonymous') {
-                        $formatted['html'] .= get_string('email') . $sep . $USER->email . $endhtml;
+                        $formatted['html'] .= get_string('email') . $sep . s($USER->email) . $endhtml;
                         $formatted['plaintext'] .= get_string('email') . $sep . $USER->email . $endplaintext;
                     }
             }
-            $formatted['html'] .= $answers[0][$i] . $sep . $answers[1][$i] . $endhtml;
+            // Answers can hold respondent markup (cleaned, but still links and images), so the HTML email shows it as text.
+            $formatted['html'] .= s($answers[0][$i]) . $sep . s(html_to_text((string)$answers[1][$i], 0, false)) . $endhtml;
             $formatted['plaintext'] .= $answers[0][$i] . $sep . $answers[1][$i] . $endplaintext;
         }
         return $formatted;
