@@ -55,6 +55,7 @@ class nonrespondents_table extends \flexible_table {
      * @param moodle_url $baseurl
      */
     public function __construct(questionnaire $questionnaire, moodle_url $baseurl) {
+        global $CFG;
         parent::__construct('questionnaire-shownonrespondents-' . $questionnaire->courseid());
         $this->questionnaire = $questionnaire;
         $context = $questionnaire->context();
@@ -63,12 +64,18 @@ class nonrespondents_table extends \flexible_table {
 
         $columns = ['userpic' => get_string('userpic'), 'fullname' => get_string('fullnameuser')];
         $identityfields = \core_user\fields::get_identity_fields($context, false);
-        if (in_array('email', $identityfields) || has_capability('moodle/course:viewhiddenuserfields', $context)) {
+        // As in core's participant lists, email shows only as an identity field.
+        if (in_array('email', $identityfields)) {
             $columns['email'] = get_string('email');
         }
-        $columns['city'] = get_string('city');
-        $columns['country'] = get_string('country');
-        $columns['lastaccess'] = get_string('lastaccess');
+        // Fields the site hides from profiles show only to users who may see hidden fields.
+        $hiddenfields = has_capability('moodle/course:viewhiddenuserfields', $context)
+            ? [] : explode(',', $CFG->hiddenuserfields ?? '');
+        foreach (['city', 'country', 'lastaccess'] as $field) {
+            if (!in_array($field, $hiddenfields)) {
+                $columns[$field] = get_string($field);
+            }
+        }
         if ($this->showstatus) {
             $columns['status'] = get_string('status');
         }
