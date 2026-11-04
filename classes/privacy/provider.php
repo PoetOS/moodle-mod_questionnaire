@@ -113,6 +113,7 @@ class provider implements
 
         // Submitted responses can be emailed to the addresses configured in the survey settings.
         $collection->add_external_location_link('email', [
+            'email' => 'privacy:metadata:email:email',
             'fullname' => 'privacy:metadata:email:fullname',
             'submitted' => 'privacy:metadata:email:submitted',
             'response' => 'privacy:metadata:email:response',

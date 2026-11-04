@@ -473,6 +473,7 @@ $string['printtooltip'] = 'Opens printer-friendly window with current Response';
 $string['privacy:metadata:core_files'] = 'Files uploaded as answers to file questions are stored using the Moodle file system.';
 $string['privacy:metadata:core_message'] = 'Notifications of new submissions, which can include the respondent\'s name and answers, are sent to selected course users through the Moodle messaging system.';
 $string['privacy:metadata:email'] = 'Submitted responses can be emailed to the addresses entered in the survey settings, when the site allows email reporting.';
+$string['privacy:metadata:email:email'] = 'The email address of the respondent, unless the questionnaire is anonymous.';
 $string['privacy:metadata:email:fullname'] = 'The name of the respondent, unless the questionnaire is anonymous.';
 $string['privacy:metadata:email:response'] = 'The answers in the submitted response.';
 $string['privacy:metadata:email:submitted'] = 'The time the response was submitted.';
