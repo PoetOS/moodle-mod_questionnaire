@@ -242,6 +242,9 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         $this->assertContains('core_files', $names);
         $this->assertContains('core_message', $names);
         $this->assertContains('email', $names);
+
+        $email = array_values(array_filter($collection->get_collection(), fn($item) => $item->get_name() === 'email'))[0];
+        $this->assertEqualsCanonicalizing(['email', 'fullname', 'submitted', 'response'], array_keys($email->get_privacy_fields()));
     }
 
     /**
