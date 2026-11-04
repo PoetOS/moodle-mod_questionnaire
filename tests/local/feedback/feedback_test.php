@@ -242,4 +242,31 @@ final class feedback_test extends \advanced_testcase {
         $this->expectException(\invalid_parameter_exception::class);
         $questionnaire->feedback()->section($foreign->id);
     }
+
+    /**
+     * format_section_heading() replaces every placeholder with its own value.
+     *
+     * @dataProvider format_section_heading_provider
+     * @param string $heading
+     * @param string $expected
+     */
+    public function test_format_section_heading(string $heading, string $expected): void {
+        $this->assertSame($expected, feedback::format_section_heading($heading, 70, 30));
+    }
+
+    /**
+     * Headings and their expected output for a score of 70.
+     *
+     * @return array
+     */
+    public static function format_section_heading_provider(): array {
+        return [
+            'score once' => ['<p>You scored $scorepercent%</p>', '<p>You scored 70%</p>'],
+            'score three times' => ['$scorepercent, $scorepercent, $scorepercent', '70%, 70%, 70%'],
+            'opposite only' => ['Opposite: $oppositescorepercent', 'Opposite: 30%'],
+            'reverse order' => ['$oppositescorepercent then $scorepercent', '30% then 70%'],
+            'stray percent' => ['100% sure: $scorepercent', '100 sure: 70%'],
+            'no placeholders' => ['Plain heading', 'Plain heading'],
+        ];
+    }
 }
