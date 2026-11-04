@@ -53,4 +53,47 @@ class pdf_factory {
 
         return $pdf;
     }
+
+    /**
+     * Remove images that TCPDF would fetch from another server.
+     *
+     * TCPDF fetches image URLs itself, bypassing the site's curl security settings, and respondent answers can
+     * contain images. Only inline images and the plugin's own chart images are kept; any other image is replaced
+     * by a marker showing its alt text, so the reader knows something was there.
+     *
+     * @param string $html
+     * @return string
+     */
+    public static function strip_remote_images(string $html): string {
+        global $CFG;
+        $allowed = $CFG->wwwroot . '/mod/questionnaire/images/';
+
+        return preg_replace_callback('~<img\b[^>]*>~i', function (array $tag) use ($allowed): string {
+            $src = trim(self::attribute_value($tag[0], 'src'));
+            if (str_starts_with($src, '@') || stripos($src, 'data:image/') === 0) {
+                return $tag[0];
+            }
+            if (str_starts_with($src, $allowed) && !str_contains($src, '..')) {
+                return $tag[0];
+            }
+            $alt = trim(self::attribute_value($tag[0], 'alt'));
+            return ($alt === '') ? get_string('imageremoved', 'questionnaire') :
+                s(get_string('imageremovedalt', 'questionnaire', $alt));
+        }, $html);
+    }
+
+    /**
+     * Return the decoded value of an attribute in an HTML tag, or an empty string if it is missing.
+     *
+     * @param string $tag
+     * @param string $name
+     * @return string
+     */
+    private static function attribute_value(string $tag, string $name): string {
+        $pattern = '~(?<![\w-])' . preg_quote($name, '~') . '\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]*))~i';
+        if (!preg_match($pattern, $tag, $match)) {
+            return '';
+        }
+        return html_entity_decode($match[1] . ($match[2] ?? '') . ($match[3] ?? ''), ENT_QUOTES | ENT_HTML5);
+    }
 }
