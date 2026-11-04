@@ -257,4 +257,24 @@ final class submission_notifier_test extends \advanced_testcase {
         $this->assertStringContainsString('&lt;img src=x onerror=alert(1)&gt;', $messages[0]->fullmessagehtml);
         $this->assertStringContainsString('Say something', $messages[0]->fullmessagehtml);
     }
+
+    /**
+     * The survey-address report email shows answer markup and question names as text; the plain-text body is unchanged.
+     */
+    public function test_format_answers_for_email_escapes_html(): void {
+        $this->resetAfterTest();
+        [$questionnaire] = $this->setup_with_student(['respondenttype' => 'anonymous']);
+        $answer = '<a href="https://evil.example/login">Click to view the full report</a><img src="https://track.example/x.png">';
+        $answers = [['Response', '<b>Q1</b>'], ['1', $answer]];
+
+        $method = new \ReflectionMethod(submission_notifier::class, 'format_answers_for_email');
+        $formatted = $method->invoke(new submission_notifier($questionnaire), $answers);
+
+        $this->assertStringNotContainsString('<a ', $formatted['html']);
+        $this->assertStringNotContainsString('<img', $formatted['html']);
+        $this->assertStringNotContainsString('<b>', $formatted['html']);
+        $this->assertStringContainsString('Click to view the full report', $formatted['html']);
+        $this->assertStringContainsString('&lt;b&gt;Q1&lt;/b&gt;', $formatted['html']);
+        $this->assertStringContainsString($answer, $formatted['plaintext']);
+    }
 }
