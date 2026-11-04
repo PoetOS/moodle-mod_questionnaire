@@ -335,11 +335,7 @@ class feedback {
             }
             $feedback = feedback_record::find_for_score($sectionid, (float) $scorepercent);
 
-            $sectionheading = str_replace('%', '', $sectionheading);
-            $original = ['$scorepercent', '$oppositescorepercent'];
-            $result = ['%s%%', '%s%%'];
-            $sectionheading = str_replace($original, $result, $sectionheading);
-            $sectionheading = sprintf($sectionheading, $scorepercent, $oppositescorepercent);
+            $sectionheading = self::format_section_heading($sectionheading, $scorepercent, $oppositescorepercent);
             $sectionheading = file_rewrite_pluginfile_urls(
                 $sectionheading,
                 'pluginfile.php',
@@ -479,10 +475,11 @@ class feedback {
                 if (is_nan($scorepercent[$section])) {
                     continue;
                 }
-                $sectionheading = str_replace('%', '', $sectionheading);
-                $original = ['$scorepercent', '$oppositescorepercent'];
-                $result = ["$scorepercent[$section]%", "$oppositescorepercent[$section]%"];
-                $sectionheading = str_replace($original, $result, $sectionheading);
+                $sectionheading = self::format_section_heading(
+                    $sectionheading,
+                    $scorepercent[$section],
+                    $oppositescorepercent[$section]
+                );
                 $sectionheading = file_rewrite_pluginfile_urls(
                     $sectionheading,
                     'pluginfile.php',
@@ -584,6 +581,25 @@ class feedback {
         }
 
         return new scoreboard($feedbackmessages, $tablehtml, $charthtml);
+    }
+
+    /**
+     * Put the scores into a feedback section heading in place of its $scorepercent and $oppositescorepercent placeholders.
+     *
+     * Each placeholder may appear any number of times. Literal '%' signs are removed first, as the values bring their own,
+     * so a heading written as '$scorepercent%' does not show two.
+     *
+     * @param string $heading The section heading as written.
+     * @param int|float $scorepercent The respondent's score percentage.
+     * @param int|float $oppositescorepercent The opposite percentage (100 minus the score).
+     * @return string
+     */
+    public static function format_section_heading(string $heading, $scorepercent, $oppositescorepercent): string {
+        return str_replace(
+            ['$scorepercent', '$oppositescorepercent'],
+            ["{$scorepercent}%", "{$oppositescorepercent}%"],
+            str_replace('%', '', $heading)
+        );
     }
 
     /**
