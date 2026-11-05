@@ -40,18 +40,18 @@ final class pdf_factory_test extends \advanced_testcase {
     }
 
     /**
-     * Only the plugin's own images survive; others become a marker.
+     * Only the plugin's own images survive, rebuilt from their checked values; others become a marker.
      *
      * @dataProvider strip_remote_images_provider
      * @param string $img The image tag, with {wwwroot} standing for the site address.
-     * @param string|null $marker The expected replacement, or null if the tag is kept.
+     * @param string $expected The expected replacement, with {wwwroot} standing for the site address.
      */
-    public function test_strip_remote_images(string $img, ?string $marker): void {
+    public function test_strip_remote_images(string $img, string $expected): void {
         global $CFG;
         $img = str_replace('{wwwroot}', $CFG->wwwroot, $img);
-        $html = '<p>Answer ' . $img . ' end</p>';
-        $expected = ($marker === null) ? $html : '<p>Answer ' . $marker . ' end</p>';
-        $this->assertSame($expected, pdf_factory::strip_remote_images($html));
+        $expected = str_replace('{wwwroot}', $CFG->wwwroot, $expected);
+        $html = pdf_factory::strip_remote_images('<p>Answer ' . $img . ' end</p>');
+        $this->assertSame('<p>Answer ' . $expected . ' end</p>', $html);
     }
 
     /**
@@ -77,7 +77,17 @@ final class pdf_factory_test extends \advanced_testcase {
             'tcpdf inline' => ['<img src="@AAAA">', '[image]'],
             'inline svg data' => ['<img src="data:image/svg+xml;base64,' . self::SVG . '">', '[image]'],
             'tcpdf inline svg' => ['<img src="@' . self::SVG . '">', '[image]'],
-            'plugin bar image' => ['<img style="height:9px;" alt="" src="{wwwroot}/mod/questionnaire/images/hbar_l.gif">', null],
+            'src look-alike in title' => ['<img title="src={wwwroot}/mod/questionnaire/images/hbar.gif" ' .
+                'src="http://169.254.169.254/latest/meta-data/" alt="x">', '[image: x]'],
+            'repeated src' => ['<img src="{wwwroot}/mod/questionnaire/images/hbar.gif" src="http://10.0.0.1/">', '[image]'],
+            'single-quoted plugin image' => ['<img src=\'{wwwroot}/mod/questionnaire/images/hbar.gif\'>', '[image]'],
+            'not an image file' => ['<img src="{wwwroot}/mod/questionnaire/images/a.php">', '[image]'],
+            'encoded parent path' => ['<img src="{wwwroot}/mod/questionnaire/images/&#46;&#46;/a.gif">', '[image]'],
+            'plugin bar image' => ['<img style="height:9px;" alt="" src="{wwwroot}/mod/questionnaire/images/hbar_l.gif">',
+                '<img src="{wwwroot}/mod/questionnaire/images/hbar_l.gif" alt="" style="height:9px;" />'],
+            'extra attributes dropped' => ['<img srcset="http://10.0.0.1/a.png" alt="bar" ' .
+                'SRC="{wwwroot}/mod/questionnaire/images/hbar.gif">',
+                '<img src="{wwwroot}/mod/questionnaire/images/hbar.gif" alt="bar" style="" />'],
         ];
     }
 }
