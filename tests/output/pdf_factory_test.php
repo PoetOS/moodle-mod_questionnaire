@@ -27,6 +27,9 @@ namespace mod_questionnaire\output;
  * @covers     \mod_questionnaire\output\pdf_factory
  */
 final class pdf_factory_test extends \advanced_testcase {
+    /** @var string Base64 SVG whose image element points at an internal address. */
+    private const SVG = 'PHN2Zz48aW1hZ2UgeGxpbms6aHJlZj0iaHR0cDovLzEwLjAuMC4xLyIvPjwvc3ZnPg==';
+
     /**
      * The factory returns a pdf with one page already added.
      */
@@ -37,7 +40,7 @@ final class pdf_factory_test extends \advanced_testcase {
     }
 
     /**
-     * Only inline images and the plugin's own images survive; others become a marker.
+     * Only the plugin's own images survive; others become a marker.
      *
      * @dataProvider strip_remote_images_provider
      * @param string $img The image tag, with {wwwroot} standing for the site address.
@@ -70,8 +73,10 @@ final class pdf_factory_test extends \advanced_testcase {
             'other site path' => ['<img src="{wwwroot}/pluginfile.php/1/mod_questionnaire/question/1/a.png">', '[image]'],
             'parent path' => ['<img src="{wwwroot}/mod/questionnaire/images/../../../admin/a.php">', '[image]'],
             'uppercase tag' => ['<IMG SRC="http://127.0.0.1:8080/">', '[image]'],
-            'inline data' => ['<img src="data:image/png;base64,AAAA">', null],
-            'tcpdf inline' => ['<img src="@AAAA">', null],
+            'inline data' => ['<img alt="x" src="data:image/png;base64,AAAA">', '[image: x]'],
+            'tcpdf inline' => ['<img src="@AAAA">', '[image]'],
+            'inline svg data' => ['<img src="data:image/svg+xml;base64,' . self::SVG . '">', '[image]'],
+            'tcpdf inline svg' => ['<img src="@' . self::SVG . '">', '[image]'],
             'plugin bar image' => ['<img style="height:9px;" alt="" src="{wwwroot}/mod/questionnaire/images/hbar_l.gif">', null],
         ];
     }

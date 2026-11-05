@@ -58,8 +58,9 @@ class pdf_factory {
      * Remove images that TCPDF would fetch from another server.
      *
      * TCPDF fetches image URLs itself, bypassing the site's curl security settings, and respondent answers can
-     * contain images. Only inline images and the plugin's own chart images are kept; any other image is replaced
-     * by a marker showing its alt text, so the reader knows something was there.
+     * contain images. Inline images are not safe either, since an inline SVG can link to a remote image. Only the
+     * plugin's own chart images are kept; any other image is replaced by a marker showing its alt text, so the
+     * reader knows something was there.
      *
      * @param string $html
      * @return string
@@ -70,9 +71,6 @@ class pdf_factory {
 
         return preg_replace_callback('~<img\b[^>]*>~i', function (array $tag) use ($allowed): string {
             $src = trim(self::attribute_value($tag[0], 'src'));
-            if (str_starts_with($src, '@') || stripos($src, 'data:image/') === 0) {
-                return $tag[0];
-            }
             if (str_starts_with($src, $allowed) && !str_contains($src, '..')) {
                 return $tag[0];
             }
