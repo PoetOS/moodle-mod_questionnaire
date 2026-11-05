@@ -818,4 +818,57 @@ final class survey_view_builder_test extends \advanced_testcase {
 
         $this->assertObjectHasProperty('continue', $this->page_data($page));
     }
+
+    /**
+     * Posting Submit from the last page while a required question on an earlier page is unanswered
+     * shows that page again instead of finalising the response.
+     */
+    public function test_build_view_submit_refuses_incomplete_earlier_page(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $plugin = $generator->get_plugin_generator('mod_questionnaire');
+        $instance = $plugin->create_instance(['course' => $course->id]);
+        $sid = $instance->surveyid();
+        // Two questions come before the page break so it is treated as a real section break.
+        $plugin->create_question($instance, ['surveyid' => $sid, 'name' => 'Q1', 'typeid' => QUESYESNO,
+            'content' => 'First?', 'required' => 'y']);
+        $plugin->create_question($instance, ['surveyid' => $sid, 'name' => 'Q2', 'typeid' => QUESYESNO,
+            'content' => 'Second?']);
+        $plugin->create_question($instance, ['surveyid' => $sid, 'name' => 'break1', 'typeid' => QUESPAGEBREAK,
+            'content' => 'break']);
+        $q3 = $plugin->create_question($instance, ['surveyid' => $sid, 'name' => 'Q3', 'typeid' => QUESYESNO,
+            'content' => 'Third?']);
+        $student = $generator->create_and_enrol($course, 'student');
+
+        $this->setUser($student);
+        $instance = questionnaire::from_instanceid($instance->id());
+        $this->assertCount(2, $instance->questions_by_section_all());
+        $_POST = [
+            'sesskey' => sesskey(),
+            'a' => $instance->id(),
+            'sec' => 2,
+            'rid' => 0,
+            'submit' => 'Submit',
+            'submittype' => 'Submit Survey',
+            'q' . $q3->id() => 'y',
+        ];
+
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $page = page::complete();
+        (new survey_view_builder($renderer, $page))->build_view($instance, (int)$student->id);
+
+        $this->assertFalse($DB->record_exists(
+            'questionnaire_response',
+            ['questionnaireid' => $instance->id(), 'userid' => $student->id, 'complete' => 'y']
+        ));
+        $data = $this->page_data($page);
+        $hidden = array_column($data->form['hidden'], 'value', 'name');
+        $this->assertEquals(1, $hidden['sec']);
+        $this->assertStringContainsString(get_string('missingquestion', 'questionnaire'), $renderer->render($page));
+        $this->assertObjectNotHasProperty('continue', $data);
+    }
 }

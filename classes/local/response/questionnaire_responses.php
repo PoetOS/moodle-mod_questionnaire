@@ -664,6 +664,37 @@ class questionnaire_responses {
         return $message;
     }
 
+    /**
+     * Return the first section of a stored response with a required question left unanswered.
+     *
+     * Every section is checked, whatever page the user posted from. When branching is on, questions
+     * whose dependencies the response does not fulfil are not part of it and are skipped.
+     *
+     * @param int $rid The stored response id, or 0 if nothing has been stored yet.
+     * @return int|null The section number, or null if every required question is answered.
+     */
+    public function first_incomplete_section(int $rid): ?int {
+        if ($rid) {
+            $this->add_response($rid);
+            $response = $this->get_response($rid);
+        } else {
+            $response = new \mod_questionnaire\local\response\response();
+        }
+        $branching = $this->questionnaire->has_dependencies();
+        $questions = $this->questionnaire->questions();
+        foreach ($this->questionnaire->questions_by_section_all() as $section => $sectionquestions) {
+            foreach ($sectionquestions as $question) {
+                if ($branching && !$question->dependency_fulfilled($rid, $questions)) {
+                    continue;
+                }
+                if (!$question->response_complete($response)) {
+                    return (int)$section;
+                }
+            }
+        }
+        return null;
+    }
+
     // Static helpers — usable without a questionnaire instance.
 
     /**

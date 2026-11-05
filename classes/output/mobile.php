@@ -210,6 +210,7 @@ class mobile {
         if (isset($result['warnings'])) {
             if ($action == 'submit') {
                 $response = $result['response'];
+                $pagenum = $result['nextpagenum'] ?? $pagenum;
             }
             $data['notifications'] = $result['warnings'];
         } else if ($action == 'nextpage') {

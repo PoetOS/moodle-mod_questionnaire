@@ -720,4 +720,168 @@ final class questionnaire_responses_test extends \advanced_testcase {
 
         $this->assertTrue($this->has_bool_answer($rid, $q2));
     }
+
+    // Tests for first_incomplete_section().
+
+    /**
+     * Mark questions required and reload the questionnaire.
+     *
+     * @param \mod_questionnaire\questionnaire $questionnaire
+     * @param array $qids
+     * @return \mod_questionnaire\questionnaire
+     */
+    private function make_required(\mod_questionnaire\questionnaire $questionnaire, array $qids): \mod_questionnaire\questionnaire {
+        global $DB;
+        foreach ($qids as $qid) {
+            $DB->set_field('questionnaire_question', 'required', 'y', ['id' => $qid]);
+        }
+        return \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
+    }
+
+    /**
+     * Asserts first_incomplete_section() returns null when every required question is answered.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::first_incomplete_section
+     */
+    public function test_first_incomplete_section_null_when_complete(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $qids] = $this->build_three_section_questionnaire();
+        $questionnaire = $this->make_required($questionnaire, $qids);
+        $student = $this->getDataGenerator()->create_user();
+        $rid = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id)->id();
+        foreach ($qids as $qid) {
+            $this->insert_bool_answer($rid, $qid);
+        }
+
+        $this->assertNull($questionnaire->responses()->first_incomplete_section($rid));
+    }
+
+    /**
+     * Asserts first_incomplete_section() finds an unanswered required question on any page,
+     * including one before pages that are answered.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::first_incomplete_section
+     */
+    public function test_first_incomplete_section_finds_missing_page(): void {
+        $this->resetAfterTest();
+        [$questionnaire, [$q1, $q2, $q3]] = $this->build_three_section_questionnaire();
+        $student = $this->getDataGenerator()->create_user();
+
+        $first = $this->make_required($questionnaire, [$q1]);
+        $rid = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id)->id();
+        $this->insert_bool_answer($rid, $q2);
+        $this->insert_bool_answer($rid, $q3);
+        $this->assertSame(1, $first->responses()->first_incomplete_section($rid));
+
+        $second = $this->make_required($questionnaire, [$q2]);
+        $rid = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id)->id();
+        $this->insert_bool_answer($rid, $q3);
+        $this->assertSame(1, $second->responses()->first_incomplete_section($rid));
+        $this->insert_bool_answer($rid, $q1);
+        $this->assertSame(2, $second->responses()->first_incomplete_section($rid));
+    }
+
+    /**
+     * Asserts first_incomplete_section() treats a missing response as unanswered.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::first_incomplete_section
+     */
+    public function test_first_incomplete_section_without_response(): void {
+        $this->resetAfterTest();
+        [$questionnaire, [, , $q3]] = $this->build_three_section_questionnaire();
+        $this->assertNull($questionnaire->responses()->first_incomplete_section(0));
+
+        $questionnaire = $this->make_required($questionnaire, [$q3]);
+        $this->assertSame(3, $questionnaire->responses()->first_incomplete_section(0));
+    }
+
+    /**
+     * Asserts first_incomplete_section() skips a required question the response's branch leaves out,
+     * and checks it once the branch includes it.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::first_incomplete_section
+     */
+    public function test_first_incomplete_section_skips_unfulfilled_branch(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$questionnaire, [$q1, $q2], $rid] = $this->build_dependency_chain();
+        $questionnaire = $this->make_required($questionnaire, [$q2]);
+        $this->insert_bool_answer($rid, $q1, 'n');
+        $this->assertNull($questionnaire->responses()->first_incomplete_section($rid));
+
+        $DB->set_field('questionnaire_response_bool', 'choiceid', 'y', ['responseid' => $rid, 'questionid' => $q1]);
+        $this->assertSame(2, $questionnaire->responses()->first_incomplete_section($rid));
+    }
+
+    /**
+     * Asserts first_incomplete_section() checks dependent questions when branching is off,
+     * since they are then always shown.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::first_incomplete_section
+     */
+    public function test_first_incomplete_section_without_branching(): void {
+        $this->resetAfterTest();
+        [$questionnaire, [$q1, $q2], $rid] = $this->build_dependency_chain(false);
+        $questionnaire = $this->make_required($questionnaire, [$q2]);
+        $this->insert_bool_answer($rid, $q1, 'n');
+        $this->assertSame(2, $questionnaire->responses()->first_incomplete_section($rid));
+    }
+
+    /**
+     * Asserts first_incomplete_section() sees a stored single-choice answer, which is keyed by choice id.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::first_incomplete_section
+     */
+    public function test_first_incomplete_section_reads_choice_answers(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $choices = [(object)['content' => 'One', 'value' => 1], (object)['content' => 'Two', 'value' => 2]];
+        $questionnaire = $generator->create_test_questionnaire(
+            $this->getDataGenerator()->create_course(),
+            QUESRADIO,
+            ['content' => 'Pick one', 'required' => 'y'],
+            $choices
+        );
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
+        $student = $this->getDataGenerator()->create_user();
+        $response = $generator->create_question_response(
+            $questionnaire,
+            $question,
+            array_key_last($question->choices),
+            $student->id
+        );
+
+        $this->assertNull($questionnaire->responses()->first_incomplete_section((int)$response->id));
+    }
+
+    /**
+     * Asserts first_incomplete_section() counts a stored answer of zero as an answer.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::first_incomplete_section
+     */
+    public function test_first_incomplete_section_accepts_zero(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire(
+            $this->getDataGenerator()->create_course(),
+            QUESNUMERIC,
+            ['content' => 'Enter a number', 'required' => 'y']
+        );
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
+        $student = $this->getDataGenerator()->create_user();
+        $rid = \mod_questionnaire\local\response\response::create($questionnaire->id(), (int)$student->id)->id();
+        $this->assertSame(1, $questionnaire->responses()->first_incomplete_section($rid));
+
+        $DB->insert_record('questionnaire_response_text', (object)[
+            'responseid' => $rid,
+            'questionid' => $question->id(),
+            'response' => '0',
+        ]);
+        $this->assertNull($questionnaire->responses()->first_incomplete_section($rid));
+    }
 }
