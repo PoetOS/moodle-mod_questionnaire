@@ -225,6 +225,69 @@ final class responsetype_test extends \advanced_testcase {
     }
 
     /**
+     * text::get_results_tags() shows submission times only for named questionnaires.
+     *
+     * @dataProvider text_results_date_provider
+     * @param string $respondenttype
+     * @param bool $showdate
+     */
+    public function test_text_results_tags_date(string $respondenttype, bool $showdate): void {
+        $this->resetAfterTest();
+        $rt = new text($this->question_stub(5));
+        $rt->set_display_context(false, $respondenttype, 1);
+        $rows = [
+            1 => (object)['id' => 1, 'response' => 'First', 'submitted' => 1762250400, 'userid' => 2, 'rid' => 1],
+            2 => (object)['id' => 2, 'response' => 'Second', 'submitted' => 1762254000, 'userid' => 3, 'rid' => 2],
+        ];
+        $tags = $rt->get_results_tags($rows, 2, 2);
+
+        $this->assertSame($showdate, $tags->showdate);
+        foreach ($tags->responses as $index => $row) {
+            if ($showdate) {
+                $expected = userdate($rows[$index + 1]->submitted, get_string('strftimedatetime'));
+                $this->assertSame($expected, $row->response->date);
+            } else {
+                $this->assertObjectNotHasProperty('date', $row->response);
+            }
+        }
+    }
+
+    /**
+     * Respondent types and whether the submission time is shown.
+     *
+     * @return array
+     */
+    public static function text_results_date_provider(): array {
+        return [
+            'anonymous' => ['anonymous', false],
+            'named' => ['fullname', true],
+        ];
+    }
+
+    /**
+     * The text results template leaves out the date column when showdate is off.
+     */
+    public function test_text_results_template_date_column(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $renderer = $PAGE->get_renderer('mod_questionnaire');
+        $context = [
+            'tableid' => 5,
+            'responses' => [['response' => ['respondent' => '', 'date' => 'DATEVALUE', 'text' => 'An answer']]],
+            'total' => ['total' => '(1)'],
+        ];
+
+        $html = $renderer->render_from_template('mod_questionnaire/results_text', $context + ['showdate' => true]);
+        $this->assertStringContainsString('DATEVALUE', $html);
+        $this->assertStringContainsString('colspan="3"', $html);
+
+        $html = $renderer->render_from_template('mod_questionnaire/results_text', $context + ['showdate' => false]);
+        $this->assertStringNotContainsString('DATEVALUE', $html);
+        $this->assertStringNotContainsString('header c1', $html);
+        $this->assertStringNotContainsString('colspan="3"', $html);
+    }
+
+    /**
      * boolean::answers_from_webform() turns 'y' / 'n' form input into one answer per question.
      */
     public function test_answers_from_webform_boolean(): void {

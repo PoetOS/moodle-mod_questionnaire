@@ -82,6 +82,12 @@ class survey_view_builder {
                 $viewform->sec = (int)$viewform->sec;
             }
             $rid = $q->submission()->existing_response_action($viewform, $userid);
+            // Never trust the posted section: every page that applies must be complete.
+            $incompletesec = $q->responses()->first_incomplete_section($rid);
+            if ($incompletesec !== null) {
+                $this->show_incomplete_section($q, $rid, $incompletesec);
+                return;
+            }
             $q->responses()->commit_submission_response($rid, $userid);
             (new submission_notifier($q))->notify($rid);
             $this->goto_thankyou($q);
@@ -100,8 +106,6 @@ class survey_view_builder {
      * @return string|null Error message string, or null on success.
      */
     public function build_survey_form(questionnaire $q, int $quser, ?int $userid = null): ?string {
-        global $CFG;
-
         if (!($formdata = data_submitted()) || !confirm_sesskey()) {
             $formdata = new \stdClass();
         }
@@ -119,7 +123,6 @@ class survey_view_builder {
         $questionsbysec = $q->questions_by_section_all();
         $numsections = count($questionsbysec);
         $msg = '';
-        $action = $CFG->wwwroot . '/mod/questionnaire/complete.php?id=' . $q->coursemodule()->id;
 
         if (!empty($formdata->submit)) {
             $submitresult = $this->handle_submit_action($q, $formdata, $userid);
@@ -142,25 +145,7 @@ class survey_view_builder {
             $msg = $this->handle_prev_action($q, $formdata, $userid);
         }
 
-        if (!empty($formdata->rid)) {
-            $q->add_response($formdata->rid);
-        }
-
-        $this->page->add_to_page('form', self::form_data($action, [
-            'referer' => $formdata->referer ?? '',
-            'a' => $q->id(),
-            'sid' => $q->surveyid(),
-            'rid' => $formdata->rid ?? 0,
-            'sec' => $formdata->sec,
-            'end' => !empty($formdata->end) ? 1 : 0,
-            'sesskey' => sesskey(),
-        ]));
-        if ($q->questions() && $numsections) {
-            $this->survey_render($q, $formdata, $formdata->sec, $msg);
-            $this->page->add_to_page('controlbuttons', $this->control_buttons($q, $formdata->sec, $numsections));
-        } else {
-            $this->page->add_to_page('noquestions', get_string('noneinuse', 'questionnaire'));
-        }
+        $this->add_section_form($q, $formdata, $msg);
 
         return $msg ?: null;
     }
@@ -429,6 +414,55 @@ class survey_view_builder {
                 array_values($hidden)
             ),
         ];
+    }
+
+    /**
+     * Add one section of the response form to the page, with any message about it.
+     *
+     * @param questionnaire $q
+     * @param \stdClass $formdata Holds rid and sec, plus any posted fields to carry forward.
+     * @param string $msg
+     * @return void
+     */
+    private function add_section_form(questionnaire $q, \stdClass $formdata, string $msg): void {
+        global $CFG;
+
+        if (!empty($formdata->rid)) {
+            $q->add_response($formdata->rid);
+        }
+        $numsections = count($q->questions_by_section_all());
+        $action = $CFG->wwwroot . '/mod/questionnaire/complete.php?id=' . $q->coursemodule()->id;
+
+        $this->page->add_to_page('form', self::form_data($action, [
+            'referer' => $formdata->referer ?? '',
+            'a' => $q->id(),
+            'sid' => $q->surveyid(),
+            'rid' => $formdata->rid ?? 0,
+            'sec' => $formdata->sec,
+            'end' => !empty($formdata->end) ? 1 : 0,
+            'sesskey' => sesskey(),
+        ]));
+        if ($q->questions() && $numsections) {
+            $this->survey_render($q, $formdata, $formdata->sec, $msg);
+            $this->page->add_to_page('controlbuttons', $this->control_buttons($q, $formdata->sec, $numsections));
+        } else {
+            $this->page->add_to_page('noquestions', get_string('noneinuse', 'questionnaire'));
+        }
+    }
+
+    /**
+     * Show the first page with an unanswered required question instead of submitting.
+     *
+     * @param questionnaire $q
+     * @param int $rid
+     * @param int $section
+     * @return void
+     */
+    private function show_incomplete_section(questionnaire $q, int $rid, int $section): void {
+        $q->add_response($rid);
+        $msg = $q->responses()->response_check_format($section, $q->responses()->get_response($rid), true, false);
+        $msg = $msg ?: get_string('missingquestions', 'questionnaire');
+        $this->add_section_form($q, (object)['rid' => $rid, 'sec' => $section], $msg);
     }
 
     /**

@@ -1440,8 +1440,26 @@ class questionnaire {
             }
         }
 
-        if ($submit && (!isset($ret['warnings']) || empty($ret['warnings']))) {
-            $this->responses()->commit_submission_response($rid, $userid);
+        if ($submit && empty($ret['warnings'])) {
+            // Never trust the client's completed flag or page: every page that applies must be complete.
+            $incompletesec = $this->responses()->first_incomplete_section($rid);
+            if ($incompletesec === null) {
+                $this->responses()->commit_submission_response($rid, $userid);
+            } else {
+                $response = $this->responses()->get_response($rid) ?? new local\response\response();
+                $response->sec = $incompletesec;
+                $response->rid = $rid;
+                $msg = $this->responses()->response_check_format(
+                    $incompletesec,
+                    $response,
+                    true,
+                    false,
+                    $this->survey->questions()
+                );
+                $ret['warnings'] = $msg ?: get_string('missingquestions', 'questionnaire');
+                $ret['response'] = $response;
+                $ret['nextpagenum'] = $incompletesec;
+            }
         }
         return $ret;
     }

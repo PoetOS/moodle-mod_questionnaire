@@ -206,7 +206,10 @@ class text extends responsetype {
                 }
                 // The 'evencolor' attribute is used by the PDF template.
                 $response->evencolor = $evencolor;
-                $response->date = userdate($row->submitted, get_string('strftimedatetime'));
+                // The exact time can identify an anonymous respondent.
+                if ($nonanonymous) {
+                    $response->date = userdate($row->submitted, get_string('strftimedatetime'));
+                }
                 $pagetags->responses[] = (object)['response' => $response];
                 $evencolor = !$evencolor;
             }
@@ -215,6 +218,7 @@ class text extends responsetype {
                 $pagetags->sortresponse = true;
             }
             $pagetags->tableid = $this->question->id();
+            $pagetags->showdate = $nonanonymous;
             if ($showtotals == 1) {
                 $pagetags->total = new \stdClass();
                 $pagetags->total->total = "($respondents)";

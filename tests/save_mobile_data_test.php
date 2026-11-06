@@ -244,4 +244,39 @@ final class save_mobile_data_test extends \advanced_testcase {
         $this->assertArrayHasKey('nextpagenum', $result);
         $this->assertFalse($result['nextpagenum']);
     }
+
+    /**
+     * Submitting from the last page is refused while a required question on an earlier page is unanswered,
+     * even when the client claims the questionnaire is completed. The first incomplete page is returned.
+     *
+     * @covers \mod_questionnaire\questionnaire::save_mobile_data
+     */
+    public function test_submit_refused_when_earlier_page_incomplete(): void {
+        global $DB;
+        [$questionnaire, $userid] = $this->make_fixture(true, true); // Required Q1 on page 1, Q3 on page 2.
+        $this->setUser($userid);
+        $questions = $questionnaire->questions_by_section_all()[2];
+        $q3 = reset($questions);
+
+        $page2 = ['response_' . QUESTEXT . '_' . $q3->id() => 'Hello'];
+
+        // Save page 2 only, then submit with completed=1.
+        $questionnaire->save_mobile_data($userid, 2, 0, 0, 0, '', $page2);
+        $rid = (int)$DB->get_field(
+            'questionnaire_response',
+            'id',
+            ['questionnaireid' => $questionnaire->id(), 'userid' => $userid]
+        );
+        $result = $questionnaire->save_mobile_data($userid, 2, 1, $rid, 1, '', []);
+
+        $this->assertNotEmpty($result['warnings']);
+        $this->assertSame(1, $result['nextpagenum']);
+        $this->assertSame(1, $result['response']->sec);
+        $this->assertSame('n', $DB->get_field('questionnaire_response', 'complete', ['id' => $rid]));
+
+        // Submitting page 2 again with completed=0 is refused the same way.
+        $result = $questionnaire->save_mobile_data($userid, 2, 0, $rid, 1, '', $page2);
+        $this->assertSame(1, $result['nextpagenum']);
+        $this->assertSame('n', $DB->get_field('questionnaire_response', 'complete', ['id' => $rid]));
+    }
 }

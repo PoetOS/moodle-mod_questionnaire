@@ -180,7 +180,7 @@ class report_viewer {
             $page->add_to_page('respondentinfo', $respinfo);
             $this->questionnaire->reporter($this->renderer, $page)
                 ->survey_results('', false, true, $currentgroupid, $sort, $userview);
-            $html = $this->renderer->render($page);
+            $html = pdf_factory::strip_remote_images($this->renderer->render($page));
 
             // Suppress warnings: TCPF library bug at line 16749 where 'text-align' is not an array.
             $errorreporting = error_reporting(0);
@@ -335,7 +335,7 @@ class report_viewer {
                 $this->questionnaire->reporter($this->renderer, $page)
                     ->view_response($rid, '', $resps, true, true, false, $currentgroupid, $outputtarget);
             }
-            $html = $this->renderer->render($page);
+            $html = pdf_factory::strip_remote_images($this->renderer->render($page));
 
             // Suppress warnings: TCPF library bug at line 16749 where 'text-align' is not an array.
             $errorreporting = error_reporting(0);

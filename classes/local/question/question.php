@@ -996,14 +996,15 @@ abstract class question {
         if (is_a($responsedata, 'mod_questionnaire\local\response\response')) {
             // If $responsedata is a response object, look through the answers.
             if (isset($responsedata->answers[$this->id()]) && !empty($responsedata->answers[$this->id()])) {
-                $answer = $responsedata->answers[$this->id()][0];
+                $answer = reset($responsedata->answers[$this->id()]);
                 if (
                     !empty($answer->choiceid) && isset($this->choices[$answer->choiceid]) &&
                     $this->choices[$answer->choiceid]->is_other_choice()
                 ) {
                     $answered = !empty($answer->value);
                 } else {
-                    $answered = (!empty($answer->choiceid) || !empty($answer->value));
+                    // A value of '0' is an answer, as it is for webform data.
+                    $answered = (!empty($answer->choiceid) || ((string)($answer->value ?? '') !== ''));
                 }
             } else {
                 $answered = false;
