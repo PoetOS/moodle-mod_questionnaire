@@ -49,6 +49,12 @@ class response {
     /** @var array $answers Array by question of array of answer objects. */
     public $answers;
 
+    /** @var int $sec The page being saved, when the response is built from submitted data. */
+    public $sec;
+
+    /** @var int $rid The response id, when the response is built from submitted data. */
+    public $rid;
+
     /**
      * Choice constructor.
      * @param null $id

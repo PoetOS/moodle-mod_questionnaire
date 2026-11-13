@@ -1946,6 +1946,7 @@ class questionnaire {
     private function response_delete($rid, $sec = null) {
         global $DB;
 
+        $rid = (int)$rid;
         if (empty($rid)) {
             return;
         }
@@ -1978,7 +1979,8 @@ class questionnaire {
         }
 
         /* delete values */
-        $select = 'response_id = \'' . $rid . '\' ' . $qsql;
+        $select = 'response_id = ?' . $qsql;
+        $params = array_merge([$rid], $params);
         foreach (array('response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
                      'response_other', 'response_date') as $tbl) {
             $DB->delete_records_select('questionnaire_'.$tbl, $select, $params);

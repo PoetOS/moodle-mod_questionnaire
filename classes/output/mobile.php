@@ -41,8 +41,8 @@ class mobile {
         $args = (object) $args;
 
         $versionname = $args->appversioncode >= 44000 ? 'latest' : 'ionic5';
-        $cmid = $args->cmid;
-        $rid = isset($args->rid) ? $args->rid : 0;
+        $cmid = clean_param($args->cmid, PARAM_INT);
+        $rid = isset($args->rid) ? clean_param($args->rid, PARAM_INT) : 0;
         $action = isset($args->action) ? $args->action : 'index';
         $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
         $userid = isset($args->userid) ? $args->userid : $USER->id;
