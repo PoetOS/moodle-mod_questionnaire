@@ -312,6 +312,7 @@ class questionnaire {
                 if (!empty($viewform->rid)) {
                     $viewform->rid = (int)$viewform->rid;
                 }
+                $this->require_own_incomplete_response($viewform->rid, $quser);
                 if (!empty($viewform->sec)) {
                     $viewform->sec = (int)$viewform->sec;
                 }
@@ -2023,6 +2024,21 @@ class questionnaire {
             return $rec->id;
         } else {
             return 0;
+        }
+    }
+
+    /**
+     * Throw an exception unless the response id is empty or is the user's unfinished response to this questionnaire.
+     * @param int $rid
+     * @param int $userid
+     * @throws moodle_exception
+     */
+    public function require_own_incomplete_response($rid, $userid) {
+        global $DB;
+
+        $params = ['id' => (int)$rid, 'questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n'];
+        if (!empty($rid) && !$DB->record_exists('questionnaire_response', $params)) {
+            throw new moodle_exception('invalidresponse', 'questionnaire');
         }
     }
 

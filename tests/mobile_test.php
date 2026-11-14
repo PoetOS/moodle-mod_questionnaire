@@ -108,4 +108,57 @@ class mobile_test extends \advanced_testcase {
 
         $this->assertTrue($DB->record_exists('questionnaire_response_text', ['response_id' => $otherrid]));
     }
+
+    /**
+     * The app handler saves for the current user, whatever user id it is given.
+     *
+     * @runInSeparateProcess
+     * @covers \mod_questionnaire\output\mobile::mobile_view_activity
+     */
+    public function test_mobile_view_activity_ignores_userid(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        [$questionnaire, $otherrid, $student] = $this->setup_answered_questionnaire();
+        $otherid = $DB->get_field('questionnaire_response', 'userid', ['id' => $otherrid]);
+
+        \mod_questionnaire\output\mobile::mobile_view_activity([
+            'cmid' => $questionnaire->cm->id,
+            'action' => 'nextpage',
+            'pagenum' => 1,
+            'appversioncode' => 44000,
+            'userid' => $otherid,
+        ]);
+
+        $this->assertEquals(1, $DB->count_records('questionnaire_response', ['userid' => $otherid]));
+        $own = ['questionnaireid' => $questionnaire->id, 'userid' => $student->id];
+        $this->assertTrue($DB->record_exists('questionnaire_response', $own));
+    }
+
+    /**
+     * The app handler will not save into another user's response.
+     *
+     * @runInSeparateProcess
+     * @covers \mod_questionnaire\output\mobile::mobile_view_activity
+     */
+    public function test_mobile_view_activity_rejects_other_users_rid(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        [$questionnaire, $otherrid] = $this->setup_answered_questionnaire();
+        $DB->set_field('questionnaire_response', 'complete', 'n', ['id' => $otherrid]);
+
+        $this->expectException(\moodle_exception::class);
+        try {
+            \mod_questionnaire\output\mobile::mobile_view_activity([
+                'cmid' => $questionnaire->cm->id,
+                'action' => 'nextpage',
+                'pagenum' => 1,
+                'appversioncode' => 44000,
+                'rid' => $otherrid,
+            ]);
+        } finally {
+            $this->assertTrue($DB->record_exists('questionnaire_response_text', ['response_id' => $otherrid]));
+        }
+    }
 }

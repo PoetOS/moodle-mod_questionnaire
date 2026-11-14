@@ -45,7 +45,8 @@ class mobile {
         $rid = isset($args->rid) ? clean_param($args->rid, PARAM_INT) : 0;
         $action = isset($args->action) ? $args->action : 'index';
         $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
-        $userid = isset($args->userid) ? $args->userid : $USER->id;
+        // Always the current user; any userid in the args is ignored.
+        $userid = $USER->id;
         $submit = isset($args->submit) ? $args->submit : false;
         $completed = isset($args->completed) ? $args->completed : false;
 
@@ -87,6 +88,7 @@ class mobile {
             case 'nextpage':
             case 'previouspage':
                 if (!$data['notifications']) {
+                    $questionnaire->require_own_incomplete_response($rid, $userid);
                     $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
                 }
 
