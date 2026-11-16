@@ -278,6 +278,85 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Open a link's target in the current window, rather than in the popup window the link opens.
+     *
+     * @When /^I open the "([^"]*)" link in this window$/
+     * @param string $link The link text.
+     */
+    public function i_open_the_link_in_this_window(string $link): void {
+        $href = $this->find_link($link)->getAttribute('href');
+        $this->getSession()->visit($href);
+    }
+
+    /**
+     * Open a questionnaire's preview or print page, as a link to it from the given course would.
+     *
+     * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)"$/
+     * @param string $pagetype One of "popup preview", "survey preview" or "print".
+     * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
+     * @param string $shortname The short name of the course the link is in.
+     */
+    public function i_open_the_page_of_questionnaire_for_course(string $pagetype, string $name, string $shortname): void {
+        $url = $this->get_questionnaire_page_url($pagetype, $name, $shortname);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+    }
+
+    /**
+     * Open a questionnaire's preview or print page, as a link to it from the given course would, and check it is refused.
+     *
+     * This then goes to the site home page, as the refusal may be an error page.
+     *
+     * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)" and it is refused$/
+     * @param string $pagetype One of "popup preview", "survey preview" or "print".
+     * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
+     * @param string $shortname The short name of the course the link is in.
+     */
+    public function i_open_the_page_of_questionnaire_for_course_and_it_is_refused(
+        string $pagetype,
+        string $name,
+        string $shortname
+    ): void {
+        $url = $this->get_questionnaire_page_url($pagetype, $name, $shortname);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+        // The refusal is an error page, or a redirect away from the page.
+        $refused = (bool)$this->getSession()->getPage()->find('xpath', "//div[@data-rel='fatalerror']") ||
+            (strpos($this->getSession()->getCurrentUrl(), $url->get_path()) === false);
+        $this->getSession()->visit($this->locate_path('/'));
+        if (!$refused) {
+            throw new ExpectationException("The \"{$pagetype}\" page of \"{$name}\" was shown.", $this->getSession());
+        }
+    }
+
+    /**
+     * Get the URL of a questionnaire's preview or print page, as linked from the given course.
+     *
+     * @param string $pagetype One of "popup preview", "survey preview" or "print".
+     * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
+     * @param string $shortname The short name of the course the link is in.
+     * @return moodle_url
+     */
+    protected function get_questionnaire_page_url(string $pagetype, string $name, string $shortname): moodle_url {
+        global $DB;
+        $courseid = $DB->get_field('course', 'id', ['shortname' => $shortname], MUST_EXIST);
+        switch ($pagetype) {
+            case 'popup preview':
+                $params = ['id' => $this->get_cm_by_questionnaire_name($name)->id, 'popup' => 1];
+                return new moodle_url('/mod/questionnaire/preview.php', $params);
+            case 'survey preview':
+                $names = explode(' using ', $name);
+                $survey = $this->get_questionnaire_by_name($names[0]);
+                $instance = $this->get_questionnaire_by_name(end($names));
+                $params = ['sid' => $survey->sid, 'qid' => $instance->id, 'popup' => 1, 'courseid' => $courseid];
+                return new moodle_url('/mod/questionnaire/preview.php', $params);
+            case 'print':
+                $params = ['qid' => $this->get_questionnaire_by_name($name)->id, 'rid' => 0, 'courseid' => $courseid, 'sec' => 1];
+                return new moodle_url('/mod/questionnaire/print.php', $params);
+            default:
+                throw new coding_exception("Unknown questionnaire page type \"{$pagetype}\".");
+        }
+    }
+
+    /**
      * Get an id belonging to a questionnaire.
      *
      * @param string $idtype One of "survey id", "first question id" or "first feedback section id".

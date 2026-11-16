@@ -111,6 +111,18 @@ class questionnaire {
     }
 
     /**
+     * True if the "Add questionnaire" form in the given course offers this survey to copy: a template, a public
+     * survey, or one of that course's own surveys.
+     *
+     * @param stdClass $survey The questionnaire_survey record.
+     * @param int $courseid The course the questionnaire is being added to.
+     * @return bool
+     */
+    public static function survey_can_be_copied_into(stdClass $survey, int $courseid): bool {
+        return in_array($survey->realm, ['template', 'public']) || ($survey->courseid == $courseid);
+    }
+
+    /**
      * Get all delete questions by survey id.
      *
      * @return void

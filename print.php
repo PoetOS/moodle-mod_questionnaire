@@ -44,7 +44,7 @@ if (! $cm = get_coursemodule_from_instance("questionnaire", $questionnaire->id, 
 }
 
 // Check login and get context.
-require_login($courseid);
+require_login($course, false, $cm);
 
 $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 

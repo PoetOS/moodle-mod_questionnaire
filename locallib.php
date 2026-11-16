@@ -545,7 +545,7 @@ function questionnaire_get_survey_select($courseid=0, $type='') {
             if (($type == 'public') && ($survey->courseid == $courseid)) {
                 continue;
             } else {
-                $args = "sid={$survey->id}&popup=1";
+                $args = "sid={$survey->id}&popup=1&courseid={$courseid}";
                 if (!empty($survey->qid)) {
                     $args .= "&qid={$survey->qid}";
                 }

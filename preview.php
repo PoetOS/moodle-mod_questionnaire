@@ -44,9 +44,18 @@ if ($id) {
     if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $cm->instance))) {
         throw new \moodle_exception('invalidcoursemodule', 'mod_questionnaire');
     }
+    require_login($course, false, $cm);
 } else {
+    // Survey preview from the "Add questionnaire" form. The survey may be in a course the user is not enrolled in,
+    // so access is checked against the course the questionnaire is being added to.
+    $addcourse = get_course(required_param('courseid', PARAM_INT));
+    require_login($addcourse);
+    require_capability('mod/questionnaire:addinstance', context_course::instance($addcourse->id));
     if (! $survey = $DB->get_record("questionnaire_survey", array("id" => $sid))) {
         throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
+    }
+    if (!questionnaire::survey_can_be_copied_into($survey, $addcourse->id)) {
+        throw new \moodle_exception('nopermissions', 'mod_questionnaire');
     }
     if (! $course = $DB->get_record("course", ["id" => $survey->courseid])) {
         throw new \moodle_exception('coursemisconf', 'mod_questionnaire');
@@ -61,25 +70,21 @@ if ($id) {
     // Dummy cm object.
     if (!empty($qid)) {
         $cm = get_coursemodule_from_instance('questionnaire', $qid, $course->id);
+        if (!$cm || !$DB->record_exists('questionnaire', ['id' => $qid, 'sid' => $sid])) {
+            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+        }
     } else {
         $cm = false;
     }
 }
 
-// Check login and get context.
-// Do not require login if this questionnaire is viewed from the Add questionnaire page
-// to enable teachers to view template or public questionnaires located in a course where they are not enroled.
-if (!$popup) {
-    require_login($course->id, false, $cm);
-}
 $context = $cm ? context_module::instance($cm->id) : false;
 
 $url = new moodle_url('/mod/questionnaire/preview.php');
 if ($id !== 0) {
     $url->param('id', $id);
-}
-if ($sid) {
-    $url->param('sid', $sid);
+} else {
+    $url->params(['sid' => $sid, 'qid' => $qid, 'courseid' => $addcourse->id, 'popup' => $popup]);
 }
 $PAGE->set_url($url);
 
@@ -95,7 +100,7 @@ $questionnaire->add_page(new \mod_questionnaire\output\previewpage());
 $canpreview = (!isset($questionnaire->capabilities) &&
                has_capability('mod/questionnaire:preview', context_course::instance($course->id))) ||
               (isset($questionnaire->capabilities) && $questionnaire->capabilities->preview);
-if (!$canpreview && !$popup) {
+if ($id && !$canpreview) {
     // Should never happen, unless called directly by a snoop...
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
