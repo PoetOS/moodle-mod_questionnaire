@@ -111,6 +111,8 @@ if (!$fullname) {
 }
 
 if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
+    require_sesskey();
+    require_capability('mod/questionnaire:message', $context);
     if (!$fullname) {
         switch ($selectedanonymous) {
             case 'none':
@@ -146,6 +148,8 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
     $good = 1;
 
     if (is_array($messageuser)) {
+        // Only message users who have not yet answered.
+        $messageuser = array_intersect($messageuser, questionnaire_get_incomplete_users($cm, $sid) ?: []);
         foreach ($messageuser as $userid) {
             $senduser = $DB->get_record('user', array('id' => $userid));
             $eventdata = new \core\message\message();

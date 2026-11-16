@@ -182,6 +182,51 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Request a form's target with the form's values but without its session key, as a link to it would, and check it is refused.
+     *
+     * The refusal is an error page, so this then goes to the site home page.
+     *
+     * @When /^I submit the form of the "(?P<button_string>(?:[^"]|\\")*)" button without a sesskey and it is refused$/
+     * @param string $button The label of a button in the form.
+     */
+    public function i_submit_the_form_of_the_button_without_a_sesskey_and_it_is_refused(string $button): void {
+        $buttonnode = $this->find_button($button);
+        $form = $buttonnode->find('xpath', 'ancestor::form[1]');
+        if (!$form) {
+            throw new ExpectationException("The \"{$button}\" button is not in a form.", $this->getSession());
+        }
+
+        $params = [];
+        foreach ($form->findAll('css', 'input[name], textarea[name], select[name]') as $field) {
+            $name = $field->getAttribute('name');
+            $type = strtolower((string)$field->getAttribute('type'));
+            if (($name == 'sesskey') || in_array($type, ['submit', 'button', 'image', 'reset'])) {
+                continue;
+            }
+            if (in_array($type, ['checkbox', 'radio']) && !$field->isChecked()) {
+                continue;
+            }
+            $params[] = rawurlencode($name) . '=' . rawurlencode((string)$field->getValue());
+        }
+
+        $current = $this->getSession()->getCurrentUrl();
+        $action = (string)$form->getAttribute('action');
+        if (!preg_match('~^https?://~', $action)) {
+            $action = substr($current, 0, strrpos(strtok($current, '?'), '/') + 1) . $action;
+        }
+        $separator = (strpos($action, '?') === false) ? '?' : '&';
+        $this->getSession()->visit($action . $separator . implode('&', $params));
+
+        $page = $this->getSession()->getPage()->getText();
+        $refused = (strpos($page, get_string('missingparam', 'error', 'sesskey')) !== false) ||
+            (strpos($page, get_string('invalidsesskey', 'error')) !== false);
+        $this->getSession()->visit($this->locate_path('/'));
+        if (!$refused) {
+            throw new ExpectationException("The \"{$button}\" form was accepted without a sesskey.", $this->getSession());
+        }
+    }
+
+    /**
      * Adds a questions and responses to the questionnaire with the provided name.
      *
      * @Given /^"([^"]*)" has questions and responses$/

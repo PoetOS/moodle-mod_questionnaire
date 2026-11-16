@@ -83,6 +83,7 @@ $sid = $questionnaire->survey->id;
 
 // Delete question button has been pressed in questions_form AND deletion has been confirmed on the confirmation page.
 if ($delq) {
+    require_sesskey();
     $qid = $delq;
     $sid = $questionnaire->survey->id;
     $questionnaireid = $questionnaire->id;
@@ -145,6 +146,7 @@ if ($delq) {
 
 // Delete question permanently.
 if ($delpermanentlyq) {
+    require_sesskey();
     $qid = $delpermanentlyq;
     $sid = $questionnaire->survey->id;
     questionnaire_delete_permanently_questions($qid, $sid);
@@ -220,7 +222,7 @@ if ($action == 'main') {
             // Delete section breaks without asking for confirmation.
             if ($qtype == QUESPAGEBREAK) {
                 redirect(new \moodle_url('/mod/questionnaire/questions.php',
-                    ['id' => $questionnaire->cm->id, 'delq' => $qid]));
+                    ['id' => $questionnaire->cm->id, 'delq' => $qid, 'sesskey' => sesskey()]));
             }
 
             $action = "confirmdelquestion";
