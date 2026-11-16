@@ -38,6 +38,7 @@ $string['alignment'] = 'Radio buttons Alignment';
 $string['alignment_help'] = 'Select buttons alignment: vertical (default) or horizontal.';
 $string['alignment_link'] = 'mod/questionnaire/questions#Radio_Buttons';
 $string['all'] = 'All';
+$string['allfieldsrequired'] = 'All fields are required.';
 $string['allnameddegrees'] = 'Named degrees';
 $string['allnameddegrees_help'] = 'Specify text to display for rate values instead of the number. Leave a value blank to not use.';
 $string['alreadyfilled'] = 'You have already filled out this questionnaire for us{$a}. Thank you.';
