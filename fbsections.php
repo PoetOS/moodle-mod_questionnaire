@@ -63,6 +63,9 @@ $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 if ($sectionid) {
     // Get the specified section by its id.
     $feedbacksection = new mod_questionnaire\feedback\section($questionnaire->questions, ['id' => $sectionid]);
+    if ($feedbacksection->surveyid != $questionnaire->survey->id) {
+        throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+    }
 
 } else if (!$DB->count_records('questionnaire_fb_sections', ['surveyid' => $questionnaire->sid])) {
     // There are no sections currently, so create one.

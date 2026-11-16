@@ -320,7 +320,7 @@ switch ($action) {
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         } else if (!$rid || !is_numeric($rid)) {
             throw new \moodle_exception('invalidresponse', 'mod_questionnaire');
-        } else if (!($response = $DB->get_record('questionnaire_response', array('id' => $rid)))) {
+        } else if (!($response = $DB->get_record('questionnaire_response', ['id' => $rid, 'questionnaireid' => $questionnaire->id]))) {
             throw new \moodle_exception('invalidresponserecord', 'mod_questionnaire');
         }
 

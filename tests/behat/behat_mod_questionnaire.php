@@ -227,6 +227,79 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Set a hidden form field to an id belonging to a questionnaire, as an edited form would send it.
+     *
+     * @When /^I set the hidden field "([^"]*)" to the "([^"]*)" of questionnaire "([^"]*)"$/
+     * @param string $field The hidden field's name.
+     * @param string $idtype Which id to use: "survey id", "first question id" or "first feedback section id".
+     * @param string $name The questionnaire's name.
+     */
+    public function i_set_the_hidden_field_to_the_id_of_questionnaire(string $field, string $idtype, string $name): void {
+        $value = $this->get_questionnaire_id($idtype, $name);
+        $xpath = '//input[@type="hidden"][@name=' . behat_context_helper::escape($field) . ']';
+        $input = $this->find('xpath', $xpath);
+        if ($this->running_javascript()) {
+            $script = 'document.evaluate(' . json_encode($xpath) . ', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)' .
+                '.singleNodeValue.value = ' . json_encode((string)$value) . ';';
+            $this->execute_script($script);
+        } else {
+            $input->setValue($value);
+        }
+    }
+
+    /**
+     * Open a questionnaire page with one parameter set to an id belonging to a questionnaire, and check it is refused.
+     *
+     * The refusal is an error page, so this then goes to the site home page.
+     *
+     * @When /^I open "([^"]*)" of questionnaire "([^"]*)" with "([^"]*)" set to the "([^"]*)" of "([^"]*)" and it is refused$/
+     * @param string $script The page script, such as "fbsections.php".
+     * @param string $name The name of the questionnaire whose page this is.
+     * @param string $param The parameter to set.
+     * @param string $idtype Which id to use: "survey id", "first question id" or "first feedback section id".
+     * @param string $other The name of the questionnaire the id belongs to.
+     */
+    public function i_open_with_the_id_of_questionnaire_and_it_is_refused(
+        string $script,
+        string $name,
+        string $param,
+        string $idtype,
+        string $other
+    ): void {
+        $params = ['id' => $this->get_cm_by_questionnaire_name($name)->id, $param => $this->get_questionnaire_id($idtype, $other)];
+        $url = new moodle_url('/mod/questionnaire/' . $script, $params);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+
+        $refused = (bool)$this->getSession()->getPage()->find('xpath', "//div[@data-rel='fatalerror']");
+        $this->getSession()->visit($this->locate_path('/'));
+        if (!$refused) {
+            throw new ExpectationException("\"{$script}\" accepted the {$idtype} of \"{$other}\".", $this->getSession());
+        }
+    }
+
+    /**
+     * Get an id belonging to a questionnaire.
+     *
+     * @param string $idtype One of "survey id", "first question id" or "first feedback section id".
+     * @param string $name The questionnaire's name.
+     * @return int
+     */
+    protected function get_questionnaire_id(string $idtype, string $name): int {
+        global $DB;
+        $sid = $this->get_questionnaire_by_name($name)->sid;
+        switch ($idtype) {
+            case 'first question id':
+                return (int)$DB->get_field('questionnaire_question', 'MIN(id)', ['surveyid' => $sid], MUST_EXIST);
+            case 'first feedback section id':
+                return (int)$DB->get_field('questionnaire_fb_sections', 'MIN(id)', ['surveyid' => $sid], MUST_EXIST);
+            case 'survey id':
+                return (int)$sid;
+            default:
+                throw new coding_exception("Unknown questionnaire id type \"{$idtype}\".");
+        }
+    }
+
+    /**
      * Adds a questions and responses to the questionnaire with the provided name.
      *
      * @Given /^"([^"]*)" has questions and responses$/
