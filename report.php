@@ -88,7 +88,7 @@ if ($outputtarget == 'pdf') {
 
 // If you can't view the questionnaire, or can't view a specified response, error out.
 $context = context_module::instance($cm->id);
-if (!$questionnaire->can_view_all_responses(null, true) && !$individualresponse) {
+if (!$questionnaire->can_open_report($action, $outputtarget, $rid)) {
     // Should never happen, unless called directly by a snoop...
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }

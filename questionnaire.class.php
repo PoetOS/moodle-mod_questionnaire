@@ -426,6 +426,9 @@ class questionnaire {
      */
     public function view_response($rid, $referer= '', $resps = '', $compare = false, $isgroupmember = false, $allresponses = false,
                                   $currentgroupid = 0, $outputtarget = 'html') {
+        if (!$this->can_view_response($rid)) {
+            throw new moodle_exception('nopermissions', 'questionnaire');
+        }
         $this->print_survey_start('', 1, 1, 0, $rid, false, $outputtarget);
 
         $i = 0;
@@ -677,7 +680,7 @@ class questionnaire {
     /**
      * True if the user can view the specified response.
      * @param int $rid
-     * @return bool|void
+     * @return bool
      */
     public function can_view_response($rid) {
         global $USER, $DB;
@@ -690,8 +693,11 @@ class questionnaire {
                 return false;
             }
 
-            // If the response belongs to a different survey than this one, can't view it.
-            if ($response->questionnaireid != $this->id) {
+            // If the response belongs to a different questionnaire than this one, can't view it. A public survey's
+            // master instance may also view the responses of the instances that use its survey.
+            $sharedsurvey = $this->survey_is_public_master() &&
+                $DB->record_exists('questionnaire', ['id' => $response->questionnaireid, 'sid' => $this->sid]);
+            if (($response->questionnaireid != $this->id) && !$sharedsurvey) {
                 return false;
             }
 
@@ -735,6 +741,24 @@ class questionnaire {
                 return true;
             }
         }
+
+        return false;
+    }
+
+    /**
+     * True if the user can open the response report page for the given action, output target and response.
+     *
+     * @param string $action The report action.
+     * @param string $outputtarget The output target: 'html', 'print' or 'pdf'.
+     * @param int|false $rid The response id, if one is given.
+     * @return bool
+     */
+    public function can_open_report(string $action, string $outputtarget, $rid): bool {
+        // A single response the user can view, such as their own, can always be printed.
+        if (($action == 'vresp') && ($outputtarget == 'print') && $rid) {
+            return $this->can_view_response($rid);
+        }
+        return $this->can_view_all_responses(null, true) && (!$rid || $this->can_view_response($rid));
     }
 
     /**

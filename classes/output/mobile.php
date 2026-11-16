@@ -155,9 +155,13 @@ class mobile {
 
             case 'review':
                 // If reviewing a submission.
-                if ($questionnaire->capabilities->readownresponses && isset($args->submissionid) && !empty($args->submissionid)) {
-                    $questionnaire->add_response($args->submissionid);
-                    $response = $questionnaire->responses[$args->submissionid];
+                $submissionid = isset($args->submissionid) ? clean_param($args->submissionid, PARAM_INT) : 0;
+                if ($questionnaire->capabilities->readownresponses && !empty($submissionid)) {
+                    if (!$questionnaire->can_view_response($submissionid)) {
+                        throw new \moodle_exception('nopermissions', 'questionnaire');
+                    }
+                    $questionnaire->add_response($submissionid);
+                    $response = $questionnaire->responses[$submissionid];
                     $qnum = 1;
                     $pagequestions = [];
                     foreach ($questionnaire->questions as $question) {
