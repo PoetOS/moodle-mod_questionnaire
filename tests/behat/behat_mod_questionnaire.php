@@ -367,9 +367,55 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Add a submitted response record with the given questionnaire id, which need not be a real questionnaire's.
+     *
+     * @Given /^a response exists with the "([^"]*)" of questionnaire "([^"]*)" as its questionnaire id$/
+     * @param string $idtype Which id to use: "questionnaire id" or "first question id".
+     * @param string $name The questionnaire's name.
+     */
+    public function a_response_exists_with_the_id_of_questionnaire(string $idtype, string $name): void {
+        global $DB;
+        $record = ['questionnaireid' => $this->get_questionnaire_id($idtype, $name), 'complete' => 'y', 'submitted' => time()];
+        $DB->insert_record('questionnaire_response', $record);
+    }
+
+    /**
+     * Check how many response records have the given questionnaire id.
+     *
+     * @Then /^"(\d+)" responses should exist with the "([^"]*)" of questionnaire "([^"]*)" as their questionnaire id$/
+     * @param int $count The expected number of responses.
+     * @param string $idtype Which id to use: "questionnaire id" or "first question id".
+     * @param string $name The questionnaire's name.
+     */
+    public function responses_should_exist_with_the_id_of_questionnaire(int $count, string $idtype, string $name): void {
+        global $DB;
+        $actual = $DB->count_records('questionnaire_response', ['questionnaireid' => $this->get_questionnaire_id($idtype, $name)]);
+        if ($actual != $count) {
+            throw new ExpectationException("Found {$actual} responses, expected {$count}.", $this->getSession());
+        }
+    }
+
+    /**
+     * Check the positions of a questionnaire's questions that are not deleted, in the order they were added.
+     *
+     * @Then /^the question positions of questionnaire "([^"]*)" should be "([^"]*)"$/
+     * @param string $name The questionnaire's name.
+     * @param string $positions The expected positions, separated by commas.
+     */
+    public function the_question_positions_of_questionnaire_should_be(string $name, string $positions): void {
+        global $DB;
+        $sid = $this->get_questionnaire_by_name($name)->sid;
+        $select = 'surveyid = ? AND deleted IS NULL ORDER BY id';
+        $actual = implode(', ', $DB->get_fieldset_select('questionnaire_question', 'position', $select, [$sid]));
+        if ($actual !== $positions) {
+            throw new ExpectationException("The question positions are \"{$actual}\".", $this->getSession());
+        }
+    }
+
+    /**
      * Get an id belonging to a questionnaire.
      *
-     * @param string $idtype One of "survey id", "first question id" or "first feedback section id".
+     * @param string $idtype One of "questionnaire id", "survey id", "first question id" or "first feedback section id".
      * @param string $name The questionnaire's name.
      * @return int
      */
@@ -383,6 +429,8 @@ class behat_mod_questionnaire extends behat_base {
                 return (int)$DB->get_field('questionnaire_fb_sections', 'MIN(id)', ['surveyid' => $sid], MUST_EXIST);
             case 'survey id':
                 return (int)$sid;
+            case 'questionnaire id':
+                return (int)$this->get_questionnaire_by_name($name)->id;
             default:
                 throw new coding_exception("Unknown questionnaire id type \"{$idtype}\".");
         }

@@ -70,6 +70,25 @@ class deletion_question_test extends advanced_testcase {
     }
 
     /**
+     * Testing delete permanently question leaves whole responses in place.
+     *
+     * @covers ::questionnaire_delete_permanently_questions
+     */
+    public function test_delete_permanently_question_keeps_responses(): void {
+        global $DB;
+        $question = $DB->get_record_select('questionnaire_question', 'name = ?', ['DEMODATE1']);
+        $questionnaireid = $DB->get_field('questionnaire', 'id', ['sid' => $question->surveyid]);
+        $ownrid = $DB->insert_record('questionnaire_response', ['questionnaireid' => $questionnaireid, 'complete' => 'y']);
+        $otherrid = $DB->insert_record('questionnaire_response', ['questionnaireid' => $question->id, 'complete' => 'y']);
+
+        questionnaire_delete_permanently_questions($question->id, $question->surveyid);
+
+        $this->assertFalse($DB->record_exists('questionnaire_question', ['id' => $question->id]));
+        $this->assertTrue($DB->record_exists('questionnaire_response', ['id' => $ownrid]));
+        $this->assertTrue($DB->record_exists('questionnaire_response', ['id' => $otherrid]));
+    }
+
+    /**
      * Create a question by type of question.
      *
      * @param int question type.

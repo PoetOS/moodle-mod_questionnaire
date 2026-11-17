@@ -129,7 +129,7 @@ if ($delq) {
         // If no questions left in this questionnaire, remove all responses.
         if ($DB->count_records_select('questionnaire_question',
                         'surveyid = :sid AND deleted IS NULL', ['sid' => $sid]) == 0) {
-            $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
+            $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaire->id]);
         }
     }
 
