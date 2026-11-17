@@ -235,12 +235,22 @@ class behat_mod_questionnaire extends behat_base {
      * @param string $name The questionnaire's name.
      */
     public function i_set_the_hidden_field_to_the_id_of_questionnaire(string $field, string $idtype, string $name): void {
-        $value = $this->get_questionnaire_id($idtype, $name);
+        $this->i_set_the_hidden_field_to($field, (string)$this->get_questionnaire_id($idtype, $name));
+    }
+
+    /**
+     * Set a hidden form field to a value, as an edited form would send it.
+     *
+     * @When /^I set the hidden field "([^"]*)" to "([^"]*)"$/
+     * @param string $field The hidden field's name.
+     * @param string $value The value to send.
+     */
+    public function i_set_the_hidden_field_to(string $field, string $value): void {
         $xpath = '//input[@type="hidden"][@name=' . behat_context_helper::escape($field) . ']';
         $input = $this->find('xpath', $xpath);
         if ($this->running_javascript()) {
             $script = 'document.evaluate(' . json_encode($xpath) . ', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)' .
-                '.singleNodeValue.value = ' . json_encode((string)$value) . ';';
+                '.singleNodeValue.value = ' . json_encode($value) . ';';
             $this->execute_script($script);
         } else {
             $input->setValue($value);

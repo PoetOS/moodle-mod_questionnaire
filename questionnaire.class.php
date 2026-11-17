@@ -123,6 +123,22 @@ class questionnaire {
     }
 
     /**
+     * Return the posted realm if the current user may set it, otherwise the survey's current realm.
+     *
+     * The current realm and 'private' are always allowed; 'public' and 'template' need their create capabilities.
+     *
+     * @param string $realm The posted realm.
+     * @return string
+     */
+    public function allowed_realm(string $realm): string {
+        $current = $this->survey->realm;
+        $allowed = ($realm === $current) || ($realm === 'private') ||
+            ($realm === 'public' && $this->capabilities->createpublic) ||
+            ($realm === 'template' && $this->capabilities->createtemplates);
+        return $allowed ? $realm : $current;
+    }
+
+    /**
      * Get all delete questions by survey id.
      *
      * @return void

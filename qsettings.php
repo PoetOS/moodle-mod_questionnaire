@@ -89,7 +89,7 @@ if ($settings = $settingsform->get_data()) {
     $sdata = new stdClass();
     $sdata->id = $settings->sid;
     $sdata->name = $settings->name;
-    $sdata->realm = $settings->realm;
+    $sdata->realm = $questionnaire->allowed_realm($settings->realm);
     $sdata->title = $settings->title;
     $sdata->subtitle = $settings->subtitle;
 
