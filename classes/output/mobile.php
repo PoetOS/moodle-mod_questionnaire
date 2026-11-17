@@ -78,6 +78,11 @@ class mobile {
         $data['emptypage'] = 1;
         $template = "mod_questionnaire/local/mobile/$versionname/main_index_page";
 
+        // A supplied response id must be the user's own unfinished response.
+        if (in_array($action, ['submit', 'nextpage', 'previouspage', 'respond', 'resume'])) {
+            $questionnaire->require_own_incomplete_response($rid, $userid);
+        }
+
         switch ($action) {
             case 'index':
                 self::add_index_data($questionnaire, $data, $userid);
@@ -88,7 +93,6 @@ class mobile {
             case 'nextpage':
             case 'previouspage':
                 if (!$data['notifications']) {
-                    $questionnaire->require_own_incomplete_response($rid, $userid);
                     $result = $questionnaire->save_mobile_data($userid, $pagenum, $completed, $rid, $submit, $action, (array)$args);
                 }
 

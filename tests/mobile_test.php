@@ -161,4 +161,43 @@ class mobile_test extends \advanced_testcase {
             $this->assertTrue($DB->record_exists('questionnaire_response_text', ['response_id' => $otherrid]));
         }
     }
+
+    /**
+     * The app handler only opens the user's own unfinished response.
+     *
+     * @runInSeparateProcess
+     * @covers \mod_questionnaire\output\mobile::mobile_view_activity
+     */
+    public function test_mobile_view_activity_opens_only_own_response(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        [$questionnaire, $otherrid, $student] = $this->setup_answered_questionnaire();
+        $draft = ['questionnaireid' => $questionnaire->id, 'userid' => $student->id, 'complete' => 'n', 'submitted' => time()];
+        $ownrid = $DB->insert_record('questionnaire_response', $draft);
+
+        foreach (['respond', 'resume'] as $action) {
+            foreach ([0, $ownrid] as $rid) {
+                \mod_questionnaire\output\mobile::mobile_view_activity([
+                    'cmid' => $questionnaire->cm->id,
+                    'action' => $action,
+                    'pagenum' => 1,
+                    'appversioncode' => 44000,
+                    'rid' => $rid,
+                ]);
+            }
+            try {
+                \mod_questionnaire\output\mobile::mobile_view_activity([
+                    'cmid' => $questionnaire->cm->id,
+                    'action' => $action,
+                    'pagenum' => 1,
+                    'appversioncode' => 44000,
+                    'rid' => $otherrid,
+                ]);
+                $this->fail("The {$action} action opened another user's response.");
+            } catch (\moodle_exception $e) {
+                $this->assertEquals('invalidresponse', $e->errorcode);
+            }
+        }
+    }
 }
