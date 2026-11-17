@@ -302,7 +302,7 @@ class behat_mod_questionnaire extends behat_base {
      * Open a questionnaire's preview or print page, as a link to it from the given course would.
      *
      * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)"$/
-     * @param string $pagetype One of "popup preview", "survey preview" or "print".
+     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections" or "print".
      * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
      * @param string $shortname The short name of the course the link is in.
      */
@@ -317,7 +317,7 @@ class behat_mod_questionnaire extends behat_base {
      * This then goes to the site home page, as the refusal may be an error page.
      *
      * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)" and it is refused$/
-     * @param string $pagetype One of "popup preview", "survey preview" or "print".
+     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections" or "print".
      * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
      * @param string $shortname The short name of the course the link is in.
      */
@@ -340,7 +340,7 @@ class behat_mod_questionnaire extends behat_base {
     /**
      * Get the URL of a questionnaire's preview or print page, as linked from the given course.
      *
-     * @param string $pagetype One of "popup preview", "survey preview" or "print".
+     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections" or "print".
      * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
      * @param string $shortname The short name of the course the link is in.
      * @return moodle_url
@@ -358,6 +358,9 @@ class behat_mod_questionnaire extends behat_base {
                 $instance = $this->get_questionnaire_by_name(end($names));
                 $params = ['sid' => $survey->sid, 'qid' => $instance->id, 'popup' => 1, 'courseid' => $courseid];
                 return new moodle_url('/mod/questionnaire/preview.php', $params);
+            case 'feedback sections':
+                $params = ['id' => $this->get_cm_by_questionnaire_name($name)->id];
+                return new moodle_url('/mod/questionnaire/fbsections.php', $params);
             case 'print':
                 $params = ['qid' => $this->get_questionnaire_by_name($name)->id, 'rid' => 0, 'courseid' => $courseid, 'sec' => 1];
                 return new moodle_url('/mod/questionnaire/print.php', $params);
@@ -409,6 +412,21 @@ class behat_mod_questionnaire extends behat_base {
         $actual = implode(', ', $DB->get_fieldset_select('questionnaire_question', 'position', $select, [$sid]));
         if ($actual !== $positions) {
             throw new ExpectationException("The question positions are \"{$actual}\".", $this->getSession());
+        }
+    }
+
+    /**
+     * Check how many feedback sections a questionnaire has.
+     *
+     * @Then /^questionnaire "([^"]*)" should have "(\d+)" feedback sections$/
+     * @param string $name The questionnaire's name.
+     * @param int $count The expected number of feedback sections.
+     */
+    public function questionnaire_should_have_feedback_sections(string $name, int $count): void {
+        global $DB;
+        $actual = $DB->count_records('questionnaire_fb_sections', ['surveyid' => $this->get_questionnaire_by_name($name)->sid]);
+        if ($actual != $count) {
+            throw new ExpectationException("Found {$actual} feedback sections, expected {$count}.", $this->getSession());
         }
     }
 
