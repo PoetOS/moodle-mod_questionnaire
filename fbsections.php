@@ -60,9 +60,16 @@ if (!isset($SESSION->questionnaire)) {
 
 $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
+if (!$questionnaire->capabilities->editquestions) {
+    throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+}
+
 if ($sectionid) {
     // Get the specified section by its id.
     $feedbacksection = new mod_questionnaire\feedback\section($questionnaire->questions, ['id' => $sectionid]);
+    if ($feedbacksection->surveyid != $questionnaire->survey->id) {
+        throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+    }
 
 } else if (!$DB->count_records('questionnaire_fb_sections', ['surveyid' => $questionnaire->sid])) {
     // There are no sections currently, so create one.
@@ -93,17 +100,15 @@ $questionnaire->add_page(new \mod_questionnaire\output\feedbackpage());
 
 $SESSION->questionnaire->current_tab = 'feedback';
 
-if (!$questionnaire->capabilities->editquestions) {
-    throw new \moodle_exception('nopermissions', 'mod_questionnaire');
-}
-
 // Handle confirmed actions that impact display immediately.
 if ($action == 'removequestion') {
+    require_sesskey();
     $sectionid = required_param('sectionid', PARAM_INT);
     $qid = required_param('qid', PARAM_INT);
     $feedbacksection->remove_question($qid);
 
 } else if ($action == 'deletesection') {
+    require_sesskey();
     $sectionid = required_param('sectionid', PARAM_INT);
     if ($sectionid == $feedbacksection->id) {
         $feedbacksection->delete();

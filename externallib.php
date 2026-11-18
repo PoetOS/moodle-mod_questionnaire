@@ -62,7 +62,7 @@ class external extends external_api {
             [
                 'questionnaireid' => new external_value(PARAM_INT, 'Questionnaire instance id'),
                 'surveyid' => new external_value(PARAM_INT, 'Survey id'),
-                'userid' => new external_value(PARAM_INT, 'User id'),
+                'userid' => new external_value(PARAM_INT, 'Ignored; responses are always saved for the current user'),
                 'cmid' => new external_value(PARAM_INT, 'Course module id'),
                 'sec' => new external_value(PARAM_INT, 'Section number'),
                 'completed' => new external_value(PARAM_INT, 'Completed survey or not'),
@@ -87,7 +87,7 @@ class external extends external_api {
      *
      * @param int $questionnaireid the questionnaire instance id
      * @param int $surveyid Survey id
-     * @param int $userid User id
+     * @param int $userid Ignored; responses are always saved for the current user
      * @param int $cmid Course module id
      * @param int $sec Section number
      * @param int $completed Completed survey 1/0
@@ -99,6 +99,8 @@ class external extends external_api {
      */
     public static function submit_questionnaire_response($questionnaireid, $surveyid, $userid, $cmid, $sec, $completed, $rid,
                                                          $submit, $action, $responses) {
+        global $USER;
+
         self::validate_parameters(self::submit_questionnaire_response_parameters(),
             [
                 'questionnaireid' => $questionnaireid,
@@ -121,6 +123,12 @@ class external extends external_api {
         self::validate_context($context);
 
         require_capability('mod/questionnaire:submit', $context);
+
+        $userid = $USER->id;
+        $questionnaire->require_own_incomplete_response($rid, $userid);
+        if ($questionnaire->user_access_messages($userid) !== false) {
+            throw new \moodle_exception('nopermissions', 'questionnaire');
+        }
 
         $result = $questionnaire->save_mobile_data($userid, $sec, $completed, $rid, $submit, $action, $responses);
         $result['submitted'] = true;

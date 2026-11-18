@@ -314,7 +314,6 @@ function questionnaire_delete_permanently_questions($qid, $sid) {
     global $DB;
     $select = 'id = :id AND surveyid = :sid AND deleted IS NOT NULL';
     $DB->delete_records_select('questionnaire_question', $select , ['id' => $qid, 'sid' => $sid]);
-    $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
     questionnaire_delete_responses($qid);
     questionnaire_delete_dependencies($qid);
 }
@@ -545,7 +544,7 @@ function questionnaire_get_survey_select($courseid=0, $type='') {
             if (($type == 'public') && ($survey->courseid == $courseid)) {
                 continue;
             } else {
-                $args = "sid={$survey->id}&popup=1";
+                $args = "sid={$survey->id}&popup=1&courseid={$courseid}";
                 if (!empty($survey->qid)) {
                     $args .= "&qid={$survey->qid}";
                 }

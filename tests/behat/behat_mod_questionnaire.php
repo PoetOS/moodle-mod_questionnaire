@@ -182,6 +182,279 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Request a form's target with the form's values but without its session key, as a link to it would, and check it is refused.
+     *
+     * The refusal is an error page, so this then goes to the site home page.
+     *
+     * @When /^I submit the form of the "(?P<button_string>(?:[^"]|\\")*)" button without a sesskey and it is refused$/
+     * @param string $button The label of a button in the form.
+     */
+    public function i_submit_the_form_of_the_button_without_a_sesskey_and_it_is_refused(string $button): void {
+        $buttonnode = $this->find_button($button);
+        $form = $buttonnode->find('xpath', 'ancestor::form[1]');
+        if (!$form) {
+            throw new ExpectationException("The \"{$button}\" button is not in a form.", $this->getSession());
+        }
+
+        $params = [];
+        foreach ($form->findAll('css', 'input[name], textarea[name], select[name]') as $field) {
+            $name = $field->getAttribute('name');
+            $type = strtolower((string)$field->getAttribute('type'));
+            if (($name == 'sesskey') || in_array($type, ['submit', 'button', 'image', 'reset'])) {
+                continue;
+            }
+            if (in_array($type, ['checkbox', 'radio']) && !$field->isChecked()) {
+                continue;
+            }
+            $params[] = rawurlencode($name) . '=' . rawurlencode((string)$field->getValue());
+        }
+
+        $current = $this->getSession()->getCurrentUrl();
+        $action = (string)$form->getAttribute('action');
+        if (!preg_match('~^https?://~', $action)) {
+            $action = substr($current, 0, strrpos(strtok($current, '?'), '/') + 1) . $action;
+        }
+        $separator = (strpos($action, '?') === false) ? '?' : '&';
+        $this->getSession()->visit($action . $separator . implode('&', $params));
+
+        $page = $this->getSession()->getPage()->getText();
+        $refused = (strpos($page, get_string('missingparam', 'error', 'sesskey')) !== false) ||
+            (strpos($page, get_string('invalidsesskey', 'error')) !== false);
+        $this->getSession()->visit($this->locate_path('/'));
+        if (!$refused) {
+            throw new ExpectationException("The \"{$button}\" form was accepted without a sesskey.", $this->getSession());
+        }
+    }
+
+    /**
+     * Set a hidden form field to an id belonging to a questionnaire, as an edited form would send it.
+     *
+     * @When /^I set the hidden field "([^"]*)" to the "([^"]*)" of questionnaire "([^"]*)"$/
+     * @param string $field The hidden field's name.
+     * @param string $idtype Which id to use: "survey id", "first question id" or "first feedback section id".
+     * @param string $name The questionnaire's name.
+     */
+    public function i_set_the_hidden_field_to_the_id_of_questionnaire(string $field, string $idtype, string $name): void {
+        $this->i_set_the_hidden_field_to($field, (string)$this->get_questionnaire_id($idtype, $name));
+    }
+
+    /**
+     * Set a hidden form field to a value, as an edited form would send it.
+     *
+     * @When /^I set the hidden field "([^"]*)" to "([^"]*)"$/
+     * @param string $field The hidden field's name.
+     * @param string $value The value to send.
+     */
+    public function i_set_the_hidden_field_to(string $field, string $value): void {
+        $xpath = '//input[@type="hidden"][@name=' . behat_context_helper::escape($field) . ']';
+        $input = $this->find('xpath', $xpath);
+        if ($this->running_javascript()) {
+            $script = 'document.evaluate(' . json_encode($xpath) . ', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)' .
+                '.singleNodeValue.value = ' . json_encode($value) . ';';
+            $this->execute_script($script);
+        } else {
+            $input->setValue($value);
+        }
+    }
+
+    /**
+     * Open a questionnaire page with one parameter set to an id belonging to a questionnaire, and check it is refused.
+     *
+     * The refusal is an error page, so this then goes to the site home page.
+     *
+     * @When /^I open "([^"]*)" of questionnaire "([^"]*)" with "([^"]*)" set to the "([^"]*)" of "([^"]*)" and it is refused$/
+     * @param string $script The page script, such as "fbsections.php".
+     * @param string $name The name of the questionnaire whose page this is.
+     * @param string $param The parameter to set.
+     * @param string $idtype Which id to use: "survey id", "first question id" or "first feedback section id".
+     * @param string $other The name of the questionnaire the id belongs to.
+     */
+    public function i_open_with_the_id_of_questionnaire_and_it_is_refused(
+        string $script,
+        string $name,
+        string $param,
+        string $idtype,
+        string $other
+    ): void {
+        $params = ['id' => $this->get_cm_by_questionnaire_name($name)->id, $param => $this->get_questionnaire_id($idtype, $other)];
+        $url = new moodle_url('/mod/questionnaire/' . $script, $params);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+
+        $refused = (bool)$this->getSession()->getPage()->find('xpath', "//div[@data-rel='fatalerror']");
+        $this->getSession()->visit($this->locate_path('/'));
+        if (!$refused) {
+            throw new ExpectationException("\"{$script}\" accepted the {$idtype} of \"{$other}\".", $this->getSession());
+        }
+    }
+
+    /**
+     * Open a link's target in the current window, rather than in the popup window the link opens.
+     *
+     * @When /^I open the "([^"]*)" link in this window$/
+     * @param string $link The link text.
+     */
+    public function i_open_the_link_in_this_window(string $link): void {
+        $href = $this->find_link($link)->getAttribute('href');
+        $this->getSession()->visit($href);
+    }
+
+    /**
+     * Open a questionnaire's preview or print page, as a link to it from the given course would.
+     *
+     * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)"$/
+     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections" or "print".
+     * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
+     * @param string $shortname The short name of the course the link is in.
+     */
+    public function i_open_the_page_of_questionnaire_for_course(string $pagetype, string $name, string $shortname): void {
+        $url = $this->get_questionnaire_page_url($pagetype, $name, $shortname);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+    }
+
+    /**
+     * Open a questionnaire's preview or print page, as a link to it from the given course would, and check it is refused.
+     *
+     * This then goes to the site home page, as the refusal may be an error page.
+     *
+     * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)" and it is refused$/
+     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections" or "print".
+     * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
+     * @param string $shortname The short name of the course the link is in.
+     */
+    public function i_open_the_page_of_questionnaire_for_course_and_it_is_refused(
+        string $pagetype,
+        string $name,
+        string $shortname
+    ): void {
+        $url = $this->get_questionnaire_page_url($pagetype, $name, $shortname);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+        // The refusal is an error page, or a redirect away from the page.
+        $refused = (bool)$this->getSession()->getPage()->find('xpath', "//div[@data-rel='fatalerror']") ||
+            (strpos($this->getSession()->getCurrentUrl(), $url->get_path()) === false);
+        $this->getSession()->visit($this->locate_path('/'));
+        if (!$refused) {
+            throw new ExpectationException("The \"{$pagetype}\" page of \"{$name}\" was shown.", $this->getSession());
+        }
+    }
+
+    /**
+     * Get the URL of a questionnaire's preview or print page, as linked from the given course.
+     *
+     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections" or "print".
+     * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
+     * @param string $shortname The short name of the course the link is in.
+     * @return moodle_url
+     */
+    protected function get_questionnaire_page_url(string $pagetype, string $name, string $shortname): moodle_url {
+        global $DB;
+        $courseid = $DB->get_field('course', 'id', ['shortname' => $shortname], MUST_EXIST);
+        switch ($pagetype) {
+            case 'popup preview':
+                $params = ['id' => $this->get_cm_by_questionnaire_name($name)->id, 'popup' => 1];
+                return new moodle_url('/mod/questionnaire/preview.php', $params);
+            case 'survey preview':
+                $names = explode(' using ', $name);
+                $survey = $this->get_questionnaire_by_name($names[0]);
+                $instance = $this->get_questionnaire_by_name(end($names));
+                $params = ['sid' => $survey->sid, 'qid' => $instance->id, 'popup' => 1, 'courseid' => $courseid];
+                return new moodle_url('/mod/questionnaire/preview.php', $params);
+            case 'feedback sections':
+                $params = ['id' => $this->get_cm_by_questionnaire_name($name)->id];
+                return new moodle_url('/mod/questionnaire/fbsections.php', $params);
+            case 'print':
+                $params = ['qid' => $this->get_questionnaire_by_name($name)->id, 'rid' => 0, 'courseid' => $courseid, 'sec' => 1];
+                return new moodle_url('/mod/questionnaire/print.php', $params);
+            default:
+                throw new coding_exception("Unknown questionnaire page type \"{$pagetype}\".");
+        }
+    }
+
+    /**
+     * Add a submitted response record with the given questionnaire id, which need not be a real questionnaire's.
+     *
+     * @Given /^a response exists with the "([^"]*)" of questionnaire "([^"]*)" as its questionnaire id$/
+     * @param string $idtype Which id to use: "questionnaire id" or "first question id".
+     * @param string $name The questionnaire's name.
+     */
+    public function a_response_exists_with_the_id_of_questionnaire(string $idtype, string $name): void {
+        global $DB;
+        $record = ['questionnaireid' => $this->get_questionnaire_id($idtype, $name), 'complete' => 'y', 'submitted' => time()];
+        $DB->insert_record('questionnaire_response', $record);
+    }
+
+    /**
+     * Check how many response records have the given questionnaire id.
+     *
+     * @Then /^"(\d+)" responses should exist with the "([^"]*)" of questionnaire "([^"]*)" as their questionnaire id$/
+     * @param int $count The expected number of responses.
+     * @param string $idtype Which id to use: "questionnaire id" or "first question id".
+     * @param string $name The questionnaire's name.
+     */
+    public function responses_should_exist_with_the_id_of_questionnaire(int $count, string $idtype, string $name): void {
+        global $DB;
+        $actual = $DB->count_records('questionnaire_response', ['questionnaireid' => $this->get_questionnaire_id($idtype, $name)]);
+        if ($actual != $count) {
+            throw new ExpectationException("Found {$actual} responses, expected {$count}.", $this->getSession());
+        }
+    }
+
+    /**
+     * Check the positions of a questionnaire's questions that are not deleted, in the order they were added.
+     *
+     * @Then /^the question positions of questionnaire "([^"]*)" should be "([^"]*)"$/
+     * @param string $name The questionnaire's name.
+     * @param string $positions The expected positions, separated by commas.
+     */
+    public function the_question_positions_of_questionnaire_should_be(string $name, string $positions): void {
+        global $DB;
+        $sid = $this->get_questionnaire_by_name($name)->sid;
+        $select = 'surveyid = ? AND deleted IS NULL ORDER BY id';
+        $actual = implode(', ', $DB->get_fieldset_select('questionnaire_question', 'position', $select, [$sid]));
+        if ($actual !== $positions) {
+            throw new ExpectationException("The question positions are \"{$actual}\".", $this->getSession());
+        }
+    }
+
+    /**
+     * Check how many feedback sections a questionnaire has.
+     *
+     * @Then /^questionnaire "([^"]*)" should have "(\d+)" feedback sections$/
+     * @param string $name The questionnaire's name.
+     * @param int $count The expected number of feedback sections.
+     */
+    public function questionnaire_should_have_feedback_sections(string $name, int $count): void {
+        global $DB;
+        $actual = $DB->count_records('questionnaire_fb_sections', ['surveyid' => $this->get_questionnaire_by_name($name)->sid]);
+        if ($actual != $count) {
+            throw new ExpectationException("Found {$actual} feedback sections, expected {$count}.", $this->getSession());
+        }
+    }
+
+    /**
+     * Get an id belonging to a questionnaire.
+     *
+     * @param string $idtype One of "questionnaire id", "survey id", "first question id" or "first feedback section id".
+     * @param string $name The questionnaire's name.
+     * @return int
+     */
+    protected function get_questionnaire_id(string $idtype, string $name): int {
+        global $DB;
+        $sid = $this->get_questionnaire_by_name($name)->sid;
+        switch ($idtype) {
+            case 'first question id':
+                return (int)$DB->get_field('questionnaire_question', 'MIN(id)', ['surveyid' => $sid], MUST_EXIST);
+            case 'first feedback section id':
+                return (int)$DB->get_field('questionnaire_fb_sections', 'MIN(id)', ['surveyid' => $sid], MUST_EXIST);
+            case 'survey id':
+                return (int)$sid;
+            case 'questionnaire id':
+                return (int)$this->get_questionnaire_by_name($name)->id;
+            default:
+                throw new coding_exception("Unknown questionnaire id type \"{$idtype}\".");
+        }
+    }
+
+    /**
      * Adds a questions and responses to the questionnaire with the provided name.
      *
      * @Given /^"([^"]*)" has questions and responses$/
@@ -460,6 +733,48 @@ class behat_mod_questionnaire extends behat_base {
             }
         }
     }
+    /**
+     * Make a questionnaire's survey public and have another questionnaire use it, as when it is added to another course.
+     *
+     * @Given /^questionnaire "([^"]*)" uses the public survey of questionnaire "([^"]*)"$/
+     * @param string $name questionnaire that uses the survey.
+     * @param string $mastername questionnaire that owns the survey.
+     */
+    public function questionnaire_uses_public_survey(string $name, string $mastername): void {
+        global $DB;
+        $master = $this->get_questionnaire_by_name($mastername);
+        $DB->set_field('questionnaire_survey', 'realm', 'public', ['id' => $master->sid]);
+        $DB->set_field('questionnaire', 'sid', $master->sid, ['id' => $this->get_questionnaire_by_name($name)->id]);
+    }
+
+    /**
+     * Move all responses of one questionnaire to another, as if they had been made there.
+     *
+     * @Given /^the responses of questionnaire "([^"]*)" were made in questionnaire "([^"]*)"$/
+     * @param string $fromname
+     * @param string $toname
+     */
+    public function the_responses_were_made_in(string $fromname, string $toname): void {
+        global $DB;
+        $from = $this->get_questionnaire_by_name($fromname);
+        $to = $this->get_questionnaire_by_name($toname);
+        $DB->set_field('questionnaire_response', 'questionnaireid', $to->id, ['questionnaireid' => $from->id]);
+    }
+
+    /**
+     * Give all responses of a questionnaire to a user, as if that user had made them.
+     *
+     * @Given /^the responses of questionnaire "([^"]*)" were made by "([^"]*)"$/
+     * @param string $name questionnaire name.
+     * @param string $username
+     */
+    public function the_responses_were_made_by(string $name, string $username): void {
+        global $DB;
+        $userid = $DB->get_field('user', 'id', ['username' => $username], MUST_EXIST);
+        $questionnaireid = $this->get_questionnaire_by_name($name)->id;
+        $DB->set_field('questionnaire_response', 'userid', $userid, ['questionnaireid' => $questionnaireid]);
+    }
+
     /**
      * Get a questionnaire by name.
      *

@@ -30,7 +30,7 @@ require_once($CFG->libdir.'/tablelib.php');
 
 // Get the params.
 $id = required_param('id', PARAM_INT);
-$subject = optional_param('subject', '', PARAM_CLEANHTML);
+$subject = optional_param('subject', '', PARAM_TEXT);
 $message = optional_param('message', '', PARAM_CLEANHTML);
 $format = optional_param('format', FORMAT_MOODLE, PARAM_INT);
 $messageuser = optional_param_array('messageuser', false, PARAM_INT);
@@ -111,6 +111,8 @@ if (!$fullname) {
 }
 
 if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
+    require_sesskey();
+    require_capability('mod/questionnaire:message', $context);
     if (!$fullname) {
         switch ($selectedanonymous) {
             case 'none':
@@ -146,6 +148,8 @@ if ($action == 'sendmessage' && !empty($subject) && !empty($message)) {
     $good = 1;
 
     if (is_array($messageuser)) {
+        // Only message users who have not yet answered.
+        $messageuser = array_intersect($messageuser, questionnaire_get_incomplete_users($cm, $sid) ?: []);
         foreach ($messageuser as $userid) {
             $senduser = $DB->get_record('user', array('id' => $userid));
             $eventdata = new \core\message\message();
@@ -464,17 +468,18 @@ if (!$nonrespondents) {
         // Prepare data.
         $questionnaire->page->add_to_page('formarea', '<fieldset class="clearfix">');
         if ($action == 'sendmessage' && (empty($subject) || empty($message))) {
-            $questionnaire->page->add_to_page('formarea', $questionnaire->renderer->notification(get_string('allfieldsrequired')));
+            $notification = $questionnaire->renderer->notification(get_string('allfieldsrequired', 'questionnaire'));
+            $questionnaire->page->add_to_page('formarea', $notification);
         }
         $questionnaire->page->add_to_page('formarea',
             '<legend class="ftoggler">'.get_string('send_message', 'questionnaire').'</legend>');
         $id = 'message' . '_id';
-        $subjecteditor = '&nbsp;&nbsp;&nbsp;<input type="text" id="questionnaire_subject" class="form-control" size="65"
-            maxlength="255" name="subject" value="'.$subject.'" />';
+        $subjecteditor = '&nbsp;&nbsp;&nbsp;' . html_writer::empty_tag('input', ['type' => 'text', 'id' => 'questionnaire_subject',
+            'class' => 'form-control', 'size' => 65, 'maxlength' => 255, 'name' => 'subject', 'value' => $subject]);
         $format = '';
             $editor = editors_get_preferred_editor();
             $editor->use_editor($id, questionnaire_get_editor_options($context));
-            $texteditor = html_writer::tag('div', html_writer::tag('textarea', $message,
+            $texteditor = html_writer::tag('div', html_writer::tag('textarea', s($message),
                     array('id' => $id, 'name' => "message",  'class' => "form-control", 'rows' => '10', 'cols' => '60')));
             $questionnaire->page->add_to_page('formarea', '<input type="hidden" name="format" value="'.FORMAT_HTML.'" />');
 

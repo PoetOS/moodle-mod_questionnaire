@@ -137,7 +137,7 @@ class rank extends responsetype {
                     $otherrecord->response_id = $response->id;
                     $otherrecord->question_id = $this->question->id;
                     $otherrecord->choice_id = $answer->choiceid;
-                    $otherrecord->response = $responsedata->{$answer->choiceid . '_qother'};
+                    $otherrecord->response = clean_text($responsedata->{$answer->choiceid . '_qother'});
                     $DB->insert_record('questionnaire_response_other', $otherrecord);
                 }
             }
@@ -728,6 +728,9 @@ class rank extends responsetype {
                             \mod_questionnaire\question\choice::content_other_choice_display($contentobj->content)) {
                         $othertext = \mod_questionnaire\question\choice::content_other_choice_display($contentobj->content);
                         $content = $othertext . ' ' . clean_text($content);
+                        if ($osgood) {
+                            $contentright = clean_text($contentright);
+                        }
                     }
                     if ($osgood) {
                         $choicecol1 = new \stdClass();
@@ -987,12 +990,15 @@ class rank extends responsetype {
                 // TOTAL number of responses for this possible answer.
                 $total = $this->counts[$content]->num;
                 $nbresp = '<strong>('.$total.')</strong>';
+                // Decide this before the text is split or shortened below, as those change the key.
+                $isother = !empty($rows[$content]->isother);
                 if ($osgood) {
                     // Ensure there are two bits of content.
                     list($content, $contentright) = array_merge(preg_split('/[|]/', $content), array(' '));
                     $header = reset($pagetags->totals->headers);
-                    if (isset($rows[$content]) && isset($rows[$content]->isother) && $rows[$content]->isother) {
-                        $content = get_string('other', 'questionnaire') . ' ' . $content;
+                    if ($isother) {
+                        $content = get_string('other', 'questionnaire') . ' ' . clean_text($content);
+                        $contentright = clean_text($contentright);
                     }
                     $totalcols[] = (object)['align' => $header->align,
                         'text' => format_text($content, FORMAT_HTML, ['noclean' => true, 'filter' => false])];
@@ -1002,8 +1008,8 @@ class rank extends responsetype {
                     if ($contents->modname) {
                         $content = $contents->text;
                     }
-                    if (isset($rows[$content]) && isset($rows[$content]->isother) && $rows[$content]->isother) {
-                        $content = get_string('other', 'questionnaire') . ' ' . $content;
+                    if ($isother) {
+                        $content = get_string('other', 'questionnaire') . ' ' . clean_text($content);
                     }
                     $header = reset($pagetags->totals->headers);
                     $totalcols[] = (object)['align' => $header->align,

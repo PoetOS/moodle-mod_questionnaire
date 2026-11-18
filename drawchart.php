@@ -55,6 +55,8 @@ function draw_chart($feedbacktype, $labels, $groupname,
         $charttitle = get_string('thisresponse', 'questionnaire');
     }
     $charttitle2 = $groupname;
+    $charttitlejs = json_encode($charttitle, JSON_UNESCAPED_UNICODE);
+    $charttitle2js = json_encode((string)$charttitle2, JSON_UNESCAPED_UNICODE);
 
     // Gradient colors if needed.
     // TODO make gradient colors customizable in the settings.
@@ -195,7 +197,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
             if (!$allresponses) {
                 $pageoutput .= '
                             var chart = new RGraph.Bipolar("cvs", '.$score.', '.$oppositescore.');
-                            chart.Set("chart.title", "'.$charttitle.'");
+                            chart.Set("chart.title", '.$charttitlejs.');
                             chart.Set("chart.title.font", "'.$charttitlefont.'");
                             chart.Set("chart.title.size", "'.$charttitlesize.'");
                             chart.Set("chart.labels", '.$labels.');
@@ -213,7 +215,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
             if ($allscore) {
                 $pageoutput .= '
                             var chart = new RGraph.Bipolar("cvs2", '.$allscore.', '.$alloppositescore.');
-                            chart.Set("chart.title", "'.$charttitle2.'");
+                            chart.Set("chart.title", '.$charttitle2js.');
                             chart.Set("chart.title.font", "'.$charttitlefont.'");
                             chart.Set("chart.title.size", "'.$charttitlesize2.'");
                             chart.Set("chart.labels", '.$labels.');
@@ -246,7 +248,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                 $lb = explode("|", $globallabel);
                 // Just in case there is no pipe separator in label.
                 if (count($lb) > 1) {
-                    $labels = '';
+                    $labels = [];
                     $left = $lb[0];
                     $right = $lb[1];
                     $lenleft = core_text::strlen($left);
@@ -284,10 +286,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                     $maxlen = $labellen;
                 }
             }
-            foreach ($labels as $value) {
-                $output[] = '"'.$value.'"';
-            }
-            $labels = '[' . implode(',', $output) . ']';
+            $labels = json_encode(array_values($labels), JSON_UNESCAPED_UNICODE);
             $canvasheight = ($nblabels * 20) + 60;
             $charttextfont = 'Courier';
             $gutterleft = ($maxlen * 8) + 5;
@@ -308,7 +307,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
             if (!$allresponses) {
                 $pageoutput .= '
                             var chart = new RGraph.HBar("cvs", '.$score.');
-                            chart.Set("chart.title", "'.$charttitle.'");
+                            chart.Set("chart.title", '.$charttitlejs.');
                             chart.Set("chart.title.font", "'.$charttitlefont.'");
                             chart.Set("chart.title.size", "'.$charttitlesize.'");
                             chart.Set("chart.title.x", 400);
@@ -325,7 +324,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
             if ($allscore) {
                 $pageoutput .= '
                             var chart = new RGraph.HBar("cvs2", '.$allscore.');
-                            chart.Set("chart.title", "'.$charttitle2.'");
+                            chart.Set("chart.title", '.$charttitle2js.');
                             chart.Set("chart.title.font", "'.$charttitlefont.'");
                             chart.Set("chart.title.size", "'.$charttitlesize.'");
                             chart.Set("chart.title.x", 400);
@@ -349,15 +348,12 @@ function draw_chart($feedbacktype, $labels, $groupname,
             $score = json_encode($score);
             foreach ($labels as $key => $label) {
                 if ($key != 0) {
-                    $labels[$key] = wordwrap($label, 20, "\\r\\n");
+                    $labels[$key] = wordwrap($label, 20, "\r\n");
                 } else {
-                    $labels[$key] = $label ."\\r\\n";
+                    $labels[$key] = $label ."\r\n";
                 }
             }
-            foreach ($labels as $value) {
-                $output[] = '"'.$value.'"';
-            }
-            $labels = '[' . implode(',', $output) . ']';
+            $labels = json_encode(array_values($labels), JSON_UNESCAPED_UNICODE);
             if ($allscore) {
                 $allscore = json_encode($allscore);
             }
@@ -377,7 +373,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
             if (!$allresponses) {
                 $pageoutput .= '
                             var chart = new RGraph.Radar("cvs", '.$score.');
-                            chart.Set("chart.title", "'.$charttitle.'");
+                            chart.Set("chart.title", '.$charttitlejs.');
                             chart.Set("chart.labels", '.$labels.');
                             chart.Set("chart.labels.offset", 15);
                             chart.Set("chart.radius", 150);
@@ -389,7 +385,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
             if ($allscore) {
                 $pageoutput .= '
                             var chart = new RGraph.Radar("cvs2", '.$allscore.');
-                            chart.Set("chart.title", "'.$charttitle2.'");
+                            chart.Set("chart.title", '.$charttitle2js.');
                             chart.Set("chart.labels", '.$labels.');
                             chart.Set("chart.labels.offset", 15);
                             chart.Set("chart.radius", 150);
@@ -410,12 +406,9 @@ function draw_chart($feedbacktype, $labels, $groupname,
             }
 
             foreach ($labels as $key => $label) {
-                $labels[$key] = wordwrap($label, 8, "\\r\\n");
+                $labels[$key] = wordwrap($label, 8, "\r\n");
             }
-            foreach ($labels as $value) {
-                $output[] = '"'.$value.'"';
-            }
-            $labels = '[' . implode(',', $output) . ']';
+            $labels = json_encode(array_values($labels), JSON_UNESCAPED_UNICODE);
 
             if ($allscore) {
                 $allscore = json_encode($allscore);
@@ -437,7 +430,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
             if (!$allresponses) {
                 $pageoutput .= '
                             var chart = new RGraph.Rose("cvs", '.$score.');
-                            chart.Set("chart.title", "'.$charttitle.'");
+                            chart.Set("chart.title", '.$charttitlejs.');
                             chart.Set("chart.title.font", "'.$charttitlefont.'");
                             chart.Set("chart.title.size", "'.$charttitlesize.'");
                             chart.Set("chart.title.vpos", 0.2);
@@ -458,7 +451,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
             if ($allscore) {
                 $pageoutput .= '
                             var chart = new RGraph.Rose("cvs2", '.$allscore.');
-                            chart.Set("chart.title", "'.$charttitle2.'");
+                            chart.Set("chart.title", '.$charttitle2js.');
                             chart.Set("chart.title.font", "'.$charttitlefont.'");
                             chart.Set("chart.title.size", "'.$charttitlesize.'");
                             chart.Set("chart.title.vpos", 0.2);
@@ -505,10 +498,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                         $maxlen = $labellen;
                     }
                 }
-                foreach ($labels as $value) {
-                    $output[] = '"'.$value.'"';
-                }
-                $labels = '[' . implode(',', $output) . ']';
+                $labels = json_encode(array_values($labels), JSON_UNESCAPED_UNICODE);
             } else {
                 $labels = '';
             }
@@ -538,7 +528,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                         chart.Set("chart.gutter.right", "'.$gutterright.'");
                         chart.Set("scale.decimals", 0);
                         chart.Set("chart.text.font", "'.$charttextfont.'");
-                        chart.Set("chart.title", "'.$charttitle.'");
+                        chart.Set("chart.title", '.$charttitlejs.');
                         chart.Set("chart.title.font", "'.$charttitlefont.'");
                         chart.Set("chart.title.size", "'.$charttitlesize.'");
                         ';
@@ -559,7 +549,7 @@ function draw_chart($feedbacktype, $labels, $groupname,
                             chart.Set("chart.gutter.top", 30);
                             chart.Set("chart.gutter.left", 50);
                             chart.Set("chart.gutter.right", 150);
-                            chart.Set("chart.title", "'.$charttitle2.'");
+                            chart.Set("chart.title", '.$charttitle2js.');
                             chart.Set("chart.text.font", "'.$charttextfont.'");
                             chart.Set("chart.title.font", "'.$charttitlefont.'");
                             chart.Set("chart.title.size", "'.$charttitlesize.'");

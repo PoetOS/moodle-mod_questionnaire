@@ -1333,6 +1333,10 @@ abstract class question {
         global $DB;
 
         $this->form_preprocess_data($formdata);
+        // Only ever update the question the form was loaded for; otherwise this is a new question.
+        if (!empty($formdata->qid)) {
+            $formdata->qid = empty($this->qid) ? 0 : $this->qid;
+        }
         if (!empty($formdata->qid)) {
 
             // Update existing question.
@@ -1360,7 +1364,7 @@ abstract class question {
         } else {
             // Create new question:
             // Need to update any image content after the question is created, so create then update the content.
-            $formdata->surveyid = $formdata->sid;
+            $formdata->surveyid = $questionnaire->survey->id;
             $fields = ['surveyid', 'name', 'type_id', 'length', 'precise', 'required', 'position', 'extradata'];
             $questionrecord = new \stdClass();
             foreach ($fields as $f) {
@@ -1488,7 +1492,7 @@ abstract class question {
                 // New dependencies.
                 $dependencyrecord = new \stdClass();
                 $dependencyrecord->questionid = $this->qid;
-                $dependencyrecord->surveyid = $formdata->sid;
+                $dependencyrecord->surveyid = $questionnaire->survey->id;
                 $dependencyrecord->dependquestionid = $formdata->dependquestion[$nidx];
                 $dependencyrecord->dependchoiceid = $formdata->dependchoice[$nidx];
                 $dependencyrecord->dependlogic = $formdata->dependlogic_cleaned[$nidx];

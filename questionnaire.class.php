@@ -111,6 +111,34 @@ class questionnaire {
     }
 
     /**
+     * True if the "Add questionnaire" form in the given course offers this survey to copy: a template, a public
+     * survey, or one of that course's own surveys.
+     *
+     * @param stdClass $survey The questionnaire_survey record.
+     * @param int $courseid The course the questionnaire is being added to.
+     * @return bool
+     */
+    public static function survey_can_be_copied_into(stdClass $survey, int $courseid): bool {
+        return in_array($survey->realm, ['template', 'public']) || ($survey->courseid == $courseid);
+    }
+
+    /**
+     * Return the posted realm if the current user may set it, otherwise the survey's current realm.
+     *
+     * The current realm and 'private' are always allowed; 'public' and 'template' need their create capabilities.
+     *
+     * @param string $realm The posted realm.
+     * @return string
+     */
+    public function allowed_realm(string $realm): string {
+        $current = $this->survey->realm;
+        $allowed = ($realm === $current) || ($realm === 'private') ||
+            ($realm === 'public' && $this->capabilities->createpublic) ||
+            ($realm === 'template' && $this->capabilities->createtemplates);
+        return $allowed ? $realm : $current;
+    }
+
+    /**
      * Get all delete questions by survey id.
      *
      * @return void
@@ -312,6 +340,7 @@ class questionnaire {
                 if (!empty($viewform->rid)) {
                     $viewform->rid = (int)$viewform->rid;
                 }
+                $this->require_own_incomplete_response($viewform->rid, $quser);
                 if (!empty($viewform->sec)) {
                     $viewform->sec = (int)$viewform->sec;
                 }
@@ -425,6 +454,9 @@ class questionnaire {
      */
     public function view_response($rid, $referer= '', $resps = '', $compare = false, $isgroupmember = false, $allresponses = false,
                                   $currentgroupid = 0, $outputtarget = 'html') {
+        if (!$this->can_view_response($rid)) {
+            throw new moodle_exception('nopermissions', 'questionnaire');
+        }
         $this->print_survey_start('', 1, 1, 0, $rid, false, $outputtarget);
 
         $i = 0;
@@ -676,7 +708,7 @@ class questionnaire {
     /**
      * True if the user can view the specified response.
      * @param int $rid
-     * @return bool|void
+     * @return bool
      */
     public function can_view_response($rid) {
         global $USER, $DB;
@@ -689,8 +721,11 @@ class questionnaire {
                 return false;
             }
 
-            // If the response belongs to a different survey than this one, can't view it.
-            if ($response->questionnaireid != $this->id) {
+            // If the response belongs to a different questionnaire than this one, can't view it. A public survey's
+            // master instance may also view the responses of the instances that use its survey.
+            $sharedsurvey = $this->survey_is_public_master() &&
+                $DB->record_exists('questionnaire', ['id' => $response->questionnaireid, 'sid' => $this->sid]);
+            if (($response->questionnaireid != $this->id) && !$sharedsurvey) {
                 return false;
             }
 
@@ -734,6 +769,24 @@ class questionnaire {
                 return true;
             }
         }
+
+        return false;
+    }
+
+    /**
+     * True if the user can open the response report page for the given action, output target and response.
+     *
+     * @param string $action The report action.
+     * @param string $outputtarget The output target: 'html', 'print' or 'pdf'.
+     * @param int|false $rid The response id, if one is given.
+     * @return bool
+     */
+    public function can_open_report(string $action, string $outputtarget, $rid): bool {
+        // A single response the user can view, such as their own, can always be printed.
+        if (($action == 'vresp') && ($outputtarget == 'print') && $rid) {
+            return $this->can_view_response($rid);
+        }
+        return $this->can_view_all_responses(null, true) && (!$rid || $this->can_view_response($rid));
     }
 
     /**
@@ -1946,6 +1999,7 @@ class questionnaire {
     private function response_delete($rid, $sec = null) {
         global $DB;
 
+        $rid = (int)$rid;
         if (empty($rid)) {
             return;
         }
@@ -1978,7 +2032,8 @@ class questionnaire {
         }
 
         /* delete values */
-        $select = 'response_id = \'' . $rid . '\' ' . $qsql;
+        $select = 'response_id = ?' . $qsql;
+        $params = array_merge([$rid], $params);
         foreach (array('response_bool', 'resp_single', 'resp_multiple', 'response_rank', 'response_text',
                      'response_other', 'response_date') as $tbl) {
             $DB->delete_records_select('questionnaire_'.$tbl, $select, $params);
@@ -2021,6 +2076,21 @@ class questionnaire {
             return $rec->id;
         } else {
             return 0;
+        }
+    }
+
+    /**
+     * Throw an exception unless the response id is empty or is the user's unfinished response to this questionnaire.
+     * @param int $rid
+     * @param int $userid
+     * @throws moodle_exception
+     */
+    public function require_own_incomplete_response($rid, $userid) {
+        global $DB;
+
+        $params = ['id' => (int)$rid, 'questionnaireid' => $this->id, 'userid' => $userid, 'complete' => 'n'];
+        if (!empty($rid) && !$DB->record_exists('questionnaire_response', $params)) {
+            throw new moodle_exception('invalidresponse', 'questionnaire');
         }
     }
 

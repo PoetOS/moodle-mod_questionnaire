@@ -41,11 +41,12 @@ class mobile {
         $args = (object) $args;
 
         $versionname = $args->appversioncode >= 44000 ? 'latest' : 'ionic5';
-        $cmid = $args->cmid;
-        $rid = isset($args->rid) ? $args->rid : 0;
+        $cmid = clean_param($args->cmid, PARAM_INT);
+        $rid = isset($args->rid) ? clean_param($args->rid, PARAM_INT) : 0;
         $action = isset($args->action) ? $args->action : 'index';
         $pagenum = (isset($args->pagenum) && !empty($args->pagenum)) ? intval($args->pagenum) : 1;
-        $userid = isset($args->userid) ? $args->userid : $USER->id;
+        // Always the current user; any userid in the args is ignored.
+        $userid = $USER->id;
         $submit = isset($args->submit) ? $args->submit : false;
         $completed = isset($args->completed) ? $args->completed : false;
 
@@ -76,6 +77,11 @@ class mobile {
 
         $data['emptypage'] = 1;
         $template = "mod_questionnaire/local/mobile/$versionname/main_index_page";
+
+        // A supplied response id must be the user's own unfinished response.
+        if (in_array($action, ['submit', 'nextpage', 'previouspage', 'respond', 'resume'])) {
+            $questionnaire->require_own_incomplete_response($rid, $userid);
+        }
 
         switch ($action) {
             case 'index':
@@ -153,9 +159,13 @@ class mobile {
 
             case 'review':
                 // If reviewing a submission.
-                if ($questionnaire->capabilities->readownresponses && isset($args->submissionid) && !empty($args->submissionid)) {
-                    $questionnaire->add_response($args->submissionid);
-                    $response = $questionnaire->responses[$args->submissionid];
+                $submissionid = isset($args->submissionid) ? clean_param($args->submissionid, PARAM_INT) : 0;
+                if ($questionnaire->capabilities->readownresponses && !empty($submissionid)) {
+                    if (!$questionnaire->can_view_response($submissionid)) {
+                        throw new \moodle_exception('nopermissions', 'questionnaire');
+                    }
+                    $questionnaire->add_response($submissionid);
+                    $response = $questionnaire->responses[$submissionid];
                     $qnum = 1;
                     $pagequestions = [];
                     foreach ($questionnaire->questions as $question) {

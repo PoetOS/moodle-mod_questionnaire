@@ -83,6 +83,7 @@ $sid = $questionnaire->survey->id;
 
 // Delete question button has been pressed in questions_form AND deletion has been confirmed on the confirmation page.
 if ($delq) {
+    require_sesskey();
     $qid = $delq;
     $sid = $questionnaire->survey->id;
     $questionnaireid = $questionnaire->id;
@@ -90,6 +91,10 @@ if ($delq) {
     // Need to reload questions before setting deleted question to 'y'.
     $questions = $DB->get_records_select('questionnaire_question',
             'surveyid = :sid AND deleted IS NULL', ['sid' => $sid], 'id');
+    // Only delete this questionnaire's questions. This also covers a refresh (F5) after a question has been deleted.
+    if (!isset($questions[$qid])) {
+        redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
+    }
     if (isset($questions[$qid]) && $questions[$qid]->type_id == QUESPAGEBREAK) {
         $DB->delete_records('questionnaire_question', ['id' => $qid]);
     } else {
@@ -105,13 +110,8 @@ if ($delq) {
     // Delete all page break that references to question deleted.
     questionnaire_delete_pagebreaks($sid);
 
-    // Just in case the page is refreshed (F5) after a question has been deleted.
-    if (isset($questions[$qid])) {
-        $select = 'surveyid = '.$sid.' AND deleted IS NULL AND position > '.
-                        $questions[$qid]->position;
-    } else {
-        redirect($CFG->wwwroot.'/mod/questionnaire/questions.php?id='.$questionnaire->cm->id);
-    }
+    $select = 'surveyid = '.$sid.' AND deleted IS NULL AND position > '.
+                    $questions[$qid]->position;
 
     if ($records = $DB->get_records_select('questionnaire_question', $select, null, 'position ASC')) {
         foreach ($records as $record) {
@@ -129,7 +129,7 @@ if ($delq) {
         // If no questions left in this questionnaire, remove all responses.
         if ($DB->count_records_select('questionnaire_question',
                         'surveyid = :sid AND deleted IS NULL', ['sid' => $sid]) == 0) {
-            $DB->delete_records('questionnaire_response', ['questionnaireid' => $qid]);
+            $DB->delete_records('questionnaire_response', ['questionnaireid' => $questionnaire->id]);
         }
     }
 
@@ -145,11 +145,13 @@ if ($delq) {
 
 // Delete question permanently.
 if ($delpermanentlyq) {
+    require_sesskey();
     $qid = $delpermanentlyq;
     $sid = $questionnaire->survey->id;
-    questionnaire_delete_permanently_questions($qid, $sid);
+    // Only delete this questionnaire's deleted questions.
     $deletedquestion = $questionnaire->deletequestions[$qid] ?? null;
     if ($deletedquestion !== null) {
+        questionnaire_delete_permanently_questions($qid, $sid);
         $questiontype = \mod_questionnaire\question\question::qtypename($deletedquestion->type_id);
         questionnaire_observe_event_delete($questionnaire->cm->id, $questiontype, $questionnaire->course->id);
         $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $questionnaire->cm->id]);
@@ -220,7 +222,7 @@ if ($action == 'main') {
             // Delete section breaks without asking for confirmation.
             if ($qtype == QUESPAGEBREAK) {
                 redirect(new \moodle_url('/mod/questionnaire/questions.php',
-                    ['id' => $questionnaire->cm->id, 'delq' => $qid]));
+                    ['id' => $questionnaire->cm->id, 'delq' => $qid, 'sesskey' => sesskey()]));
             }
 
             $action = "confirmdelquestion";
@@ -257,7 +259,7 @@ if ($action == 'main') {
         } else if (isset($qformdata->addqbutton)) {
             if ($qformdata->type_id == QUESPAGEBREAK) { // Adding section break is handled right away....
                 $questionrec = new stdClass();
-                $questionrec->surveyid = $qformdata->sid;
+                $questionrec->surveyid = $questionnaire->survey->id;
                 $questionrec->type_id = QUESPAGEBREAK;
                 $questionrec->content = 'break';
                 $question = \mod_questionnaire\question\question::question_builder(QUESPAGEBREAK);
