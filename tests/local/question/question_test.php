@@ -67,36 +67,72 @@ final class question_test extends \advanced_testcase {
     }
 
     /**
-     * Saving the question form records whether its author is trusted, and the text is shown by that flag.
+     * Saving the question form records whether its author is trusted.
      *
      * @covers \mod_questionnaire\local\question\question::content_trust
-     * @covers \mod_questionnaire\local\question\question::format_content
      */
     public function test_form_update_records_content_trust(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
-        $questionnaire = $generator->create_test_questionnaire($this->getDataGenerator()->create_course());
-        $payload = '<p>Pick</p><script>alert(1)</script>';
-        $save = function (string $name) use ($questionnaire, $payload): question {
-            global $DB;
-            [$question] = $questionnaire->survey()->prep_question_for_form(0, QUESTEXT);
-            $question->form_update((object)[
-                'qid' => 0, 'typeid' => QUESTEXT, 'name' => $name, 'length' => 20, 'precise' => 25, 'required' => 'n',
-                'content' => ['text' => $payload, 'format' => FORMAT_HTML, 'itemid' => file_get_unused_draft_itemid()],
-            ], $questionnaire);
-            $id = $DB->get_field('questionnaire_question', 'id', ['name' => $name], MUST_EXIST);
-            return question::question_builder(QUESTEXT, (int)$id);
-        };
+        $questionnaire = $this->create_questionnaire();
 
-        $untrusted = $save('Untrusted');
-        $this->assertSame(0, $untrusted->content_trust());
-        $this->assertStringNotContainsString('<script>', $untrusted->format_content($untrusted->content()));
+        $this->assertSame(0, $this->save_question($questionnaire, 'Untrusted', '<p>Pick</p>')->content_trust());
 
         set_config('enabletrusttext', 1);
-        $trusted = $save('Trusted');
-        $this->assertSame(1, $trusted->content_trust());
-        $this->assertStringContainsString('<script>', $trusted->format_content($trusted->content()));
-        $this->assertStringNotContainsString('<script>', $untrusted->format_content($untrusted->content()));
+        $this->assertSame(1, $this->save_question($questionnaire, 'Trusted', '<p>Pick</p>')->content_trust());
+    }
+
+    /**
+     * With trusted content off, the author's markup is kept when the question is saved, edited again and shown.
+     *
+     * @covers \mod_questionnaire\local\question\question::format_content
+     * @covers \mod_questionnaire\local\survey\survey::prep_question_for_form
+     */
+    public function test_author_markup_kept_for_editing_and_display(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $questionnaire = $this->create_questionnaire();
+        $html = '<details><summary>More</summary><p>Detail</p></details><iframe src="https://example.com/embed"></iframe>';
+        $question = $this->save_question($questionnaire, 'Rich', $html);
+
+        $this->assertSame(0, $question->content_trust());
+        $this->assertSame($html, $question->content());
+
+        $questionnaire = \mod_questionnaire\questionnaire::from_instanceid($questionnaire->id());
+        [, $editorcontent] = $questionnaire->survey()->prep_question_for_form($question->id(), QUESTEXT);
+        $this->assertSame($html, $editorcontent['text']);
+
+        $shown = $question->format_content($question->content(), ['para' => false]);
+        $this->assertStringContainsString('<details><summary>More</summary>', $shown);
+        $this->assertStringContainsString('<iframe src="https://example.com/embed"></iframe>', $shown);
+    }
+
+    /**
+     * Create a questionnaire with one text question.
+     *
+     * @return \mod_questionnaire\questionnaire
+     */
+    private function create_questionnaire(): \mod_questionnaire\questionnaire {
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        return $generator->create_test_questionnaire($this->getDataGenerator()->create_course());
+    }
+
+    /**
+     * Save a new text question through the question form and load it back.
+     *
+     * @param \mod_questionnaire\questionnaire $questionnaire
+     * @param string $name
+     * @param string $text
+     * @return question
+     */
+    private function save_question(\mod_questionnaire\questionnaire $questionnaire, string $name, string $text): question {
+        global $DB;
+        [$question] = $questionnaire->survey()->prep_question_for_form(0, QUESTEXT);
+        $question->form_update((object)[
+            'qid' => 0, 'typeid' => QUESTEXT, 'name' => $name, 'length' => 20, 'precise' => 25, 'required' => 'n',
+            'content' => ['text' => $text, 'format' => FORMAT_HTML, 'itemid' => file_get_unused_draft_itemid()],
+        ], $questionnaire);
+        $id = $DB->get_field('questionnaire_question', 'id', ['name' => $name], MUST_EXIST);
+        return question::question_builder(QUESTEXT, (int)$id);
     }
 }

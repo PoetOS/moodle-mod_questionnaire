@@ -983,9 +983,7 @@ class reporter {
             if ($rendered !== '') {
                 $this->page->add_to_page(
                     'feedbacknotes',
-                    $this->renderer->box(
-                        \mod_questionnaire\local\trusttext::format($rendered, $this->questionnaire->feedback()->notes_trust())
-                    )
+                    $this->renderer->box(format_text($rendered, FORMAT_HTML))
                 );
             }
         }

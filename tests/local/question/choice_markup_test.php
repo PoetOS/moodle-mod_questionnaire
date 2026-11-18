@@ -28,7 +28,7 @@ namespace mod_questionnaire\local\question;
 use mod_questionnaire\local\response\response;
 
 /**
- * Choice text, embedded images and "other" labels are all cleaned when the author was not trusted.
+ * Choice text, embedded images and "other" labels are shown with their author's markup.
  *
  * @group mod_questionnaire
  * @covers \mod_questionnaire\local\question\check
@@ -36,11 +36,11 @@ use mod_questionnaire\local\response\response;
  * @covers \mod_questionnaire\local\question\question::mobile_question_choices_display
  */
 final class choice_markup_test extends \advanced_testcase {
-    /** @var string A choice whose image carries an event handler. */
-    private const IMAGE_CHOICE = 'Yes <img onerror="alert(1)" src="https://example.com/yes.png">';
+    /** @var string A choice with an embedded image. */
+    private const IMAGE_CHOICE = 'Yes <img src="https://example.com/yes.png">';
 
-    /** @var string An "other" choice whose label carries an event handler. */
-    private const OTHER_CHOICE = '!other=<b onmouseover="alert(2)">Something else</b>';
+    /** @var string An "other" choice with a formatted label. */
+    private const OTHER_CHOICE = '!other=<b>Something else</b>';
 
     /**
      * Data provider: the two question types with image and "other" choices.
@@ -55,25 +55,23 @@ final class choice_markup_test extends \advanced_testcase {
     }
 
     /**
-     * The form keeps the choice image but drops its event handler.
+     * The form shows the choice image and the formatted "other" label.
      *
      * @dataProvider types_provider
      * @param int $typeid
      */
-    public function test_question_survey_display_cleans_choice_image(int $typeid): void {
+    public function test_question_survey_display_keeps_choice_markup(int $typeid): void {
         $this->resetAfterTest();
         $question = $this->build_question($typeid);
 
         $choicetags = $this->invoke($question, 'question_survey_display', [new response(), [], false]);
         $labels = implode("\n", array_map(fn($element) => $element->choice->label ?? '', $choicetags->qelements));
 
-        $this->assert_cleaned($labels);
-        $this->assertStringContainsString('src="https://example.com/yes.png"', $labels);
-        $this->assertStringContainsString('Something else', $labels);
+        $this->assert_markup_kept($labels);
     }
 
     /**
-     * The radio "other" text box is labelled from a language string around the cleaned label.
+     * The radio "other" text box is labelled from a language string around the formatted label.
      */
     public function test_radio_other_text_label_uses_language_string(): void {
         $this->resetAfterTest();
@@ -84,58 +82,54 @@ final class choice_markup_test extends \advanced_testcase {
 
         $this->assertCount(1, $olabels);
         $this->assertSame(
-            get_string('othertextfor', 'questionnaire', $question->format_content('<b onmouseover="alert(2)">Something else</b>')),
+            get_string('othertextfor', 'questionnaire', $question->format_content('<b>Something else</b>')),
             $olabels[0]
         );
-        $this->assert_cleaned($olabels[0]);
     }
 
     /**
-     * Response views clean the choice image and the "other" label.
+     * Response views show the choice image and the formatted "other" label.
      *
      * @dataProvider types_provider
      * @param int $typeid
      */
-    public function test_response_survey_display_cleans_choices(int $typeid): void {
+    public function test_response_survey_display_keeps_choice_markup(int $typeid): void {
         $this->resetAfterTest();
         $question = $this->build_question($typeid);
 
         $resptags = $this->invoke($question, 'response_survey_display', [new response()]);
         $contents = implode("\n", array_map(fn($choice) => $choice->content, $resptags->choices));
 
-        $this->assert_cleaned($contents);
-        $this->assertStringContainsString('src="https://example.com/yes.png"', $contents);
-        $this->assertStringContainsString('Something else', $contents);
+        $this->assert_markup_kept($contents);
     }
 
     /**
-     * The mobile app's choices keep the image but drop its event handler.
+     * The mobile app's choices show the choice image.
      *
      * @dataProvider types_provider
      * @param int $typeid
      */
-    public function test_mobile_question_choices_display_cleans_choice_image(int $typeid): void {
+    public function test_mobile_question_choices_display_keeps_choice_image(int $typeid): void {
         $this->resetAfterTest();
         $question = $this->build_question($typeid);
 
         $contents = implode("\n", array_map(fn($choice) => $choice->content, $question->mobile_question_choices_display()));
 
-        $this->assert_cleaned($contents);
-        $this->assertStringContainsString('src="https://example.com/yes.png"', $contents);
+        $this->assertStringContainsString('<img src="https://example.com/yes.png"', $contents);
     }
 
     /**
-     * Assert that neither payload's event handler survived.
+     * Assert that the choice image and the formatted "other" label are both shown.
      *
      * @param string $html
      */
-    private function assert_cleaned(string $html): void {
-        $this->assertStringNotContainsString('onerror', $html);
-        $this->assertStringNotContainsString('onmouseover', $html);
+    private function assert_markup_kept(string $html): void {
+        $this->assertStringContainsString('<img src="https://example.com/yes.png"', $html);
+        $this->assertStringContainsString('<b>Something else</b>', $html);
     }
 
     /**
-     * Build a question of the given type, saved by an untrusted author, with an image choice and an "other" choice.
+     * Build a question of the given type, saved without trust, with an image choice and an "other" choice.
      *
      * @param int $typeid QUESCHECK or QUESRADIO.
      * @return question

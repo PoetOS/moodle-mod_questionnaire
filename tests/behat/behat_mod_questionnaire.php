@@ -725,6 +725,49 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Add an essay question with the given HTML text to a questionnaire, saved without a trust flag.
+     *
+     * @Given /^questionnaire "([^"]*)" has an essay question named "([^"]*)" with this text:$/
+     * @param string $name questionnaire name.
+     * @param string $questionname
+     * @param PyStringNode $text
+     */
+    public function questionnaire_has_essay_question_with_text(string $name, string $questionname, PyStringNode $text): void {
+        $record = $this->get_questionnaire_by_name($name);
+        $generator = testing_util::get_data_generator()->get_plugin_generator('mod_questionnaire');
+        $questiondata = ['surveyid' => $record->sid, 'name' => $questionname, 'typeid' => QUESESSAY, 'content' => $text->getRaw()];
+        $generator->create_question(\mod_questionnaire\questionnaire::from_instanceid($record->id), $questiondata);
+    }
+
+    /**
+     * Set a questionnaire's survey information to the given HTML, saved without a trust flag.
+     *
+     * @Given /^the survey information of questionnaire "([^"]*)" is:$/
+     * @param string $name questionnaire name.
+     * @param PyStringNode $text
+     */
+    public function the_survey_information_is(string $name, PyStringNode $text): void {
+        global $DB;
+        $DB->set_field('questionnaire_survey', 'info', $text->getRaw(), ['id' => $this->get_questionnaire_by_name($name)->sid]);
+    }
+
+    /**
+     * Open the editing form of a questionnaire question.
+     *
+     * @When /^I open the edit page of question "([^"]*)" of questionnaire "([^"]*)"$/
+     * @param string $questionname
+     * @param string $name questionnaire name.
+     */
+    public function i_open_the_question_edit_page(string $questionname, string $name): void {
+        global $DB;
+        $record = $this->get_questionnaire_by_name($name);
+        $qid = $DB->get_field('questionnaire_question', 'id', ['surveyid' => $record->sid, 'name' => $questionname], MUST_EXIST);
+        $cm = $this->get_cm_by_questionnaire_name($name);
+        $url = new moodle_url('/mod/questionnaire/questions.php', ['id' => $cm->id, 'action' => 'question', 'qid' => $qid]);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
+    }
+
+    /**
      * Get a questionnaire by name.
      *
      * @param string $name questionnaire name.

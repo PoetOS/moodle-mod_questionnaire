@@ -124,11 +124,7 @@ class feedback_section_form extends \moodleform {
                     'feedback',
                     (int) $feedback->id,
                     null,
-                    \mod_questionnaire\local\trusttext::for_edit(
-                        $feedback->feedbacktext,
-                        (int)$feedback->feedbacktexttrust,
-                        $this->context
-                    )
+                    $feedback->feedbacktext
                 ),
                 'format' => FORMAT_HTML,
                 'itemid' => $draftid,

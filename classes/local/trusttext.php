@@ -17,11 +17,12 @@
 namespace mod_questionnaire\local;
 
 /**
- * Moodle's trusted-text rules for staff-authored HTML: question text and choices, survey info and thank-you text,
+ * Moodle's trusted-text flag for staff-authored HTML: question text and choices, survey info and thank-you text,
  * and feedback.
  *
  * Text saved by a user with moodle/site:trustcontent, on a site with trusted content enabled, is stored with a trust
- * flag and shown unfiltered. All other text is cleaned when shown.
+ * flag. The flag is recorded only: staff-authored text is shown unfiltered, as the capabilities to author it carry
+ * RISK_XSS.
  *
  * @package    mod_questionnaire
  * @copyright  2026 Mike Churchward (mike.churchward@poetopensource.org)
@@ -37,35 +38,5 @@ class trusttext {
      */
     public static function flag(\context $context): int {
         return trusttext_trusted($context) ? 1 : 0;
-    }
-
-    /**
-     * Prepare stored text for an editor: untrusted text, or text the current user may not trust, is cleaned first.
-     *
-     * @param string|null $text
-     * @param int $trust The stored trust flag.
-     * @param \context $context
-     * @return string
-     */
-    public static function for_edit(?string $text, int $trust, \context $context): string {
-        $text = (string)$text;
-        if (!$trust || !trusttext_trusted($context)) {
-            $text = clean_text($text, FORMAT_HTML);
-        }
-        return $text;
-    }
-
-    /**
-     * Format stored HTML for display, cleaning it unless it is trusted.
-     *
-     * @param string|null $text
-     * @param int $trust The stored trust flag.
-     * @param array $options Other format_text() options.
-     * @return string
-     */
-    public static function format(?string $text, int $trust, array $options = []): string {
-        unset($options['noclean']);
-        $options['trusted'] = (bool)$trust;
-        return format_text((string)$text, FORMAT_HTML, $options);
     }
 }
