@@ -318,6 +318,22 @@ class capabilities {
     }
 
     /**
+     * True if the current user can open the response report for the given action, output target and response.
+     *
+     * @param string $action The report action.
+     * @param string $outputtarget The output target: 'html', 'print' or 'pdf'.
+     * @param int $rid The response id, or 0 if none is given.
+     * @return bool
+     */
+    public function can_open_report(string $action, string $outputtarget, int $rid): bool {
+        // A single response the user can view, such as their own, can always be printed.
+        if (($action == 'vresp') && ($outputtarget == 'print') && $rid) {
+            return $this->can_view_response($rid);
+        }
+        return $this->can_view_all_responses(null, true) && (!$rid || $this->can_view_response($rid));
+    }
+
+    /**
      * True if the current user can view all responses (checking group membership and response counts).
      *
      * @param int|null $usernumresp Number of responses the user has made; null to calculate.

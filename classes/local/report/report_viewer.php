@@ -283,10 +283,12 @@ class report_viewer {
         global $PAGE;
 
         // Browsing individual responses, including the list of respondents, needs the individual response capability.
+        // Printing one response the user can view, such as their own, does not.
+        $capabilities = $this->questionnaire->capabilities();
+        $printsingle = ($outputtarget == 'print') && $rid;
         if (
-            !$this->questionnaire->capabilities()->can_view_single_response() ||
-            !$this->questionnaire->capabilities()->can_view_all_responses(null, true) ||
-            ($rid && !$this->questionnaire->capabilities()->can_view_response((int)$rid))
+            !$capabilities->can_open_report('vresp', $outputtarget, (int)$rid) ||
+            (!$printsingle && !$capabilities->can_view_single_response())
         ) {
             throw new \moodle_exception('nopermissions', 'mod_questionnaire');
         }
@@ -296,7 +298,8 @@ class report_viewer {
 
         if (!$this->questionnaire->survey()) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
-        } else if ($this->questionnaire->survey()->owning_courseid() != $course->id) {
+        } else if (!$printsingle && ($this->questionnaire->survey()->owning_courseid() != $course->id)) {
+            // Browsing a public survey's responses is done from the course that owns it.
             throw new \moodle_exception('surveyowner', 'mod_questionnaire');
         }
         $noresponses = false;

@@ -681,6 +681,48 @@ final class capabilities_test extends \advanced_testcase {
     }
 
     /**
+     * A student who cannot view all responses can print their own response, but cannot open anything else on the report.
+     *
+     * @covers \mod_questionnaire\capabilities::can_open_report
+     */
+    public function test_can_open_report_as_student(): void {
+        $this->resetAfterTest();
+        [$questionnaire, , , $rids, $students] = $this->make_group_responses(NOGROUPS);
+
+        $this->setUser($students['a']);
+        $capabilities = $questionnaire->capabilities();
+        $this->assertTrue($capabilities->can_open_report('vresp', 'print', $rids['a']));
+        $this->assertFalse($capabilities->can_open_report('vresp', 'print', $rids['b']));
+        $this->assertFalse($capabilities->can_open_report('vresp', 'print', 0));
+        $this->assertFalse($capabilities->can_open_report('vresp', 'html', $rids['a']));
+        $this->assertFalse($capabilities->can_open_report('vresp', 'pdf', $rids['a']));
+        $this->assertFalse($capabilities->can_open_report('vall', 'print', $rids['a']));
+        $this->assertFalse($capabilities->can_open_report('vall', 'html', 0));
+    }
+
+    /**
+     * A teacher who can read all responses can open the report, but not for a response from another questionnaire.
+     *
+     * @covers \mod_questionnaire\capabilities::can_open_report
+     */
+    public function test_can_open_report_as_teacher(): void {
+        $this->resetAfterTest();
+        [$questionnaire, $course, , $rids] = $this->make_group_responses(NOGROUPS);
+        $other = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_instance([
+            'course' => $course->id,
+        ]);
+        $otherrid = \mod_questionnaire\local\response\response::create($other->id(), get_admin()->id)->id();
+
+        $this->setUser($this->getDataGenerator()->create_and_enrol($course, 'editingteacher'));
+        $capabilities = $questionnaire->capabilities();
+        $this->assertTrue($capabilities->can_open_report('vall', 'html', 0));
+        $this->assertTrue($capabilities->can_open_report('vresp', 'html', $rids['a']));
+        $this->assertTrue($capabilities->can_open_report('vresp', 'print', $rids['a']));
+        $this->assertFalse($capabilities->can_open_report('vresp', 'html', $otherrid));
+        $this->assertFalse($capabilities->can_open_report('vresp', 'print', $otherrid));
+    }
+
+    /**
      * Only the course that owns a public survey can edit it; a course using it may not.
      *
      * @covers \mod_questionnaire\capabilities::can_edit_survey_questions

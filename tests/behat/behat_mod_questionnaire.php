@@ -796,6 +796,20 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Give all responses of a questionnaire to a user, as if that user had made them.
+     *
+     * @Given /^the responses of questionnaire "([^"]*)" were made by "([^"]*)"$/
+     * @param string $name questionnaire name.
+     * @param string $username
+     */
+    public function the_responses_were_made_by(string $name, string $username): void {
+        global $DB;
+        $userid = $DB->get_field('user', 'id', ['username' => $username], MUST_EXIST);
+        $questionnaireid = $this->get_questionnaire_by_name($name)->id;
+        $DB->set_field('questionnaire_response', 'userid', $userid, ['questionnaireid' => $questionnaireid]);
+    }
+
+    /**
      * Get a questionnaire by name.
      *
      * @param string $name questionnaire name.
