@@ -16,6 +16,8 @@
 
 namespace mod_questionnaire;
 
+use mod_questionnaire\local\db\questionnaire_record;
+
 /**
  * Permission and eligibility checks for a questionnaire.
  *
@@ -393,8 +395,15 @@ class capabilities {
         if (!empty($rid)) {
             $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
 
-            // Response not found or belongs to a different questionnaire.
-            if (empty($response) || $response->questionnaireid != $this->questionnaire->id()) {
+            // Response not found or belongs to a different questionnaire. A public survey's owning instance may also view
+            // the responses of the instances that use its survey.
+            if (empty($response)) {
+                return false;
+            }
+            $sid = $this->questionnaire->surveyid();
+            $sharedsurvey = $this->questionnaire->survey_is_public_master() &&
+                questionnaire_record::count_records(['id' => $response->questionnaireid, 'sid' => $sid]);
+            if (($response->questionnaireid != $this->questionnaire->id()) && !$sharedsurvey) {
                 return false;
             }
 

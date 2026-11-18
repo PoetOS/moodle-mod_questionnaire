@@ -707,6 +707,35 @@ final class capabilities_test extends \advanced_testcase {
     }
 
     /**
+     * The course that owns a public survey can view the responses made in the courses using it; other courses and
+     * unrelated questionnaires stay apart.
+     *
+     * @covers \mod_questionnaire\capabilities::can_view_response
+     */
+    public function test_can_view_response_for_public_survey_instances(): void {
+        $this->resetAfterTest();
+        [$owner, $user] = $this->make_shared_public_survey();
+        $unrelated = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire')->create_instance([
+            'course' => $user->courseid(),
+        ]);
+        $rids = [];
+        foreach (['owner' => $owner, 'user' => $user, 'unrelated' => $unrelated] as $key => $questionnaire) {
+            $student = $this->getDataGenerator()->create_and_enrol($questionnaire->course(), 'student');
+            $rids[$key] = \mod_questionnaire\local\response\response::create($questionnaire->id(), $student->id)->id();
+            $questionnaire->responses()->response_commit($rids[$key]);
+        }
+
+        $this->setUser($this->getDataGenerator()->create_and_enrol($owner->course(), 'editingteacher'));
+        $this->assertTrue($owner->capabilities()->can_view_response($rids['owner']));
+        $this->assertTrue($owner->capabilities()->can_view_response($rids['user']));
+        $this->assertFalse($owner->capabilities()->can_view_response($rids['unrelated']));
+
+        $this->setUser($this->getDataGenerator()->create_and_enrol($user->course(), 'editingteacher'));
+        $this->assertTrue($user->capabilities()->can_view_response($rids['user']));
+        $this->assertFalse($user->capabilities()->can_view_response($rids['owner']));
+    }
+
+    /**
      * Make a public survey in one course and a questionnaire in another course that uses it.
      *
      * @return questionnaire[] [the owning questionnaire, the questionnaire that uses the survey]
