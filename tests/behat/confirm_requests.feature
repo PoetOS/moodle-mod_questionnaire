@@ -126,3 +126,10 @@ Feature: Confirmed questionnaire actions
     And I set the field "message" to "Please answer the questionnaire."
     And I press "Send"
     And I should see "Selected users have been messaged"
+
+  Scenario: Responses are only downloaded from the download form
+    Given "Test questionnaire" has questions and responses
+    And I am on the "Test questionnaire" "mod_questionnaire > view" page logged in as "admin"
+    And I navigate to "View all responses" in current page administration
+    And I follow "Download"
+    When I submit the form of the "Download" button without a sesskey and it is refused
