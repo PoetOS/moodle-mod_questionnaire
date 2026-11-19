@@ -217,7 +217,12 @@ class behat_mod_questionnaire extends behat_base {
         $separator = (strpos($action, '?') === false) ? '?' : '&';
         $this->getSession()->visit($action . $separator . implode('&', $params));
 
-        $page = $this->getSession()->getPage()->getText();
+        try {
+            $page = $this->getSession()->getPage()->getText();
+        } catch (\Behat\Mink\Exception\DriverException $e) {
+            // A file was sent instead of a page, so the request was accepted.
+            $page = '';
+        }
         $refused = (strpos($page, get_string('missingparam', 'error', 'sesskey')) !== false) ||
             (strpos($page, get_string('invalidsesskey', 'error')) !== false);
         $this->getSession()->visit($this->locate_path('/'));
