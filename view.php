@@ -95,7 +95,7 @@ if ($message !== false) {
     }
 }
 
-if ($questionnaire->capabilities->editquestions && !$questionnaire->questions && $questionnaire->is_active()) {
+if ($questionnaire->can_edit_survey_questions() && !$questionnaire->questions && $questionnaire->is_active()) {
     $questionnaire->page->add_to_page('complete',
         '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/questions.php?'.
         'id=' . $questionnaire->cm->id) . '" class="btn btn-primary">' .

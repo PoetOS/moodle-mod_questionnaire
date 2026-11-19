@@ -307,7 +307,8 @@ class behat_mod_questionnaire extends behat_base {
      * Open a questionnaire's preview or print page, as a link to it from the given course would.
      *
      * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)"$/
-     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections" or "print".
+     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections", "questions",
+     *     "advanced settings", "feedback" or "print".
      * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
      * @param string $shortname The short name of the course the link is in.
      */
@@ -322,7 +323,8 @@ class behat_mod_questionnaire extends behat_base {
      * This then goes to the site home page, as the refusal may be an error page.
      *
      * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)" and it is refused$/
-     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections" or "print".
+     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections", "questions",
+     *     "advanced settings", "feedback" or "print".
      * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
      * @param string $shortname The short name of the course the link is in.
      */
@@ -345,7 +347,8 @@ class behat_mod_questionnaire extends behat_base {
     /**
      * Get the URL of a questionnaire's preview or print page, as linked from the given course.
      *
-     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections" or "print".
+     * @param string $pagetype One of "popup preview", "survey preview", "feedback sections", "questions",
+     *     "advanced settings", "feedback" or "print".
      * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
      * @param string $shortname The short name of the course the link is in.
      * @return moodle_url
@@ -366,6 +369,12 @@ class behat_mod_questionnaire extends behat_base {
             case 'feedback sections':
                 $params = ['id' => $this->get_cm_by_questionnaire_name($name)->id];
                 return new moodle_url('/mod/questionnaire/fbsections.php', $params);
+            case 'questions':
+            case 'advanced settings':
+            case 'feedback':
+                $scripts = ['questions' => 'questions.php', 'advanced settings' => 'qsettings.php', 'feedback' => 'feedback.php'];
+                $params = ['id' => $this->get_cm_by_questionnaire_name($name)->id];
+                return new moodle_url('/mod/questionnaire/' . $scripts[$pagetype], $params);
             case 'print':
                 $params = ['qid' => $this->get_questionnaire_by_name($name)->id, 'rid' => 0, 'courseid' => $courseid, 'sec' => 1];
                 return new moodle_url('/mod/questionnaire/print.php', $params);
