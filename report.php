@@ -698,6 +698,9 @@ switch ($action) {
 
     case 'vresp': // View by response.
     default:
+        if (!$questionnaire->can_view_individual_responses($outputtarget, $rid)) {
+            throw new \moodle_exception('nopermissions', 'mod_questionnaire');
+        }
         if (empty($questionnaire->survey)) {
             throw new \moodle_exception('surveynotexists', 'mod_questionnaire');
         } else if ($questionnaire->survey->courseid != $course->id) {

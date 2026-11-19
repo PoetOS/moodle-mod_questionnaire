@@ -38,17 +38,20 @@ class response_view_test extends \advanced_testcase {
      * The user is set up before the questionnaire is created, because the plugin caches capabilities for the whole request.
      *
      * @param string $role The role of the user viewing the responses.
+     * @param string[] $extracapabilities More capabilities to give the role.
+     * @param array $courseoptions Course settings, such as the group mode.
      * @return array [questionnaire, the viewing user's response id or 0, the other user's response id]
      */
-    private function setup_answered_questionnaire(string $role): array {
+    private function setup_answered_questionnaire(string $role, array $extracapabilities = [], array $courseoptions = []): array {
         global $DB;
 
-        $course = $this->getDataGenerator()->create_course();
+        $course = $this->getDataGenerator()->create_course($courseoptions);
         $other = $this->getDataGenerator()->create_and_enrol($course, 'student');
         $user = $this->getDataGenerator()->create_and_enrol($course, $role);
         $coursecontext = \context_course::instance($course->id);
         $roleid = $DB->get_field('role', 'id', ['shortname' => $role]);
         $capabilities = ($role == 'student') ? ['submit', 'readownresponses'] : ['readallresponseanytime'];
+        $capabilities = array_merge($capabilities, $extracapabilities);
         foreach ($capabilities as $capability) {
             assign_capability('mod/questionnaire:' . $capability, CAP_ALLOW, $roleid, $coursecontext->id);
         }
@@ -65,6 +68,17 @@ class response_view_test extends \advanced_testcase {
         $otherrid = $generator->create_question_response($questionnaire, $question, 'Not yours.', $other->id)->id;
 
         return [$questionnaire, $ownrid, $otherrid];
+    }
+
+    /**
+     * The user who gave a response.
+     *
+     * @param int $rid
+     * @return int
+     */
+    private function get_response_userid(int $rid): int {
+        global $DB;
+        return (int)$DB->get_field('questionnaire_response', 'userid', ['id' => $rid], MUST_EXIST);
     }
 
     /**
@@ -146,6 +160,76 @@ class response_view_test extends \advanced_testcase {
         $this->assertFalse($master->can_view_response($unrelatedrid));
         $this->assertTrue($instance->can_view_response($instancerid));
         $this->assertFalse($instance->can_view_response($masterrid));
+    }
+
+    /**
+     * A student who may read the response summaries cannot view another user's complete response or browse the
+     * respondents, but can still see the summary and their own response.
+     *
+     * @runInSeparateProcess
+     * @covers \questionnaire::can_view_response
+     * @covers \questionnaire::can_view_individual_responses
+     */
+    public function test_can_view_response_needs_individual_response_capability(): void {
+        $this->resetAfterTest();
+
+        [$questionnaire, $ownrid, $otherrid] = $this->setup_answered_questionnaire('student', ['readallresponses']);
+        $questionnaire->resp_view = QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS;
+
+        $this->assertTrue($questionnaire->can_open_report('vall', 'html', false));
+        $this->assertTrue($questionnaire->can_view_response($ownrid));
+        $this->assertFalse($questionnaire->can_view_response($otherrid));
+        $this->assertFalse($questionnaire->can_view_individual_responses('html', false));
+        $this->assertFalse($questionnaire->can_view_individual_responses('html', $ownrid));
+        $this->assertTrue($questionnaire->can_view_individual_responses('print', $ownrid));
+        $this->assertFalse($questionnaire->can_view_individual_responses('print', $otherrid));
+    }
+
+    /**
+     * A user given the individual response capability can view other users' responses and browse the respondents.
+     *
+     * @runInSeparateProcess
+     * @covers \questionnaire::can_view_response
+     * @covers \questionnaire::can_view_individual_responses
+     */
+    public function test_can_view_response_with_individual_response_capability(): void {
+        $this->resetAfterTest();
+
+        [$questionnaire, , $otherrid] = $this->setup_answered_questionnaire(
+            'student',
+            ['readallresponses', 'viewsingleresponse']
+        );
+        $questionnaire->resp_view = QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS;
+
+        $this->assertTrue($questionnaire->can_view_response($otherrid));
+        $this->assertTrue($questionnaire->can_view_individual_responses('html', false));
+        $this->assertTrue($questionnaire->can_view_individual_responses('print', $otherrid));
+    }
+
+    /**
+     * In separate groups, a teacher who cannot access all groups only views the responses of users in a shared group.
+     *
+     * @runInSeparateProcess
+     * @covers \questionnaire::can_view_response
+     */
+    public function test_can_view_response_in_separate_groups(): void {
+        global $USER;
+        $this->resetAfterTest();
+
+        [$questionnaire, , $otherrid] = $this->setup_answered_questionnaire(
+            'teacher',
+            [],
+            ['groupmode' => SEPARATEGROUPS, 'groupmodeforce' => 1]
+        );
+        $other = \core_user::get_user($this->get_response_userid($otherrid));
+        $othergroup = $this->getDataGenerator()->create_group(['courseid' => $questionnaire->course->id]);
+        $owngroup = $this->getDataGenerator()->create_group(['courseid' => $questionnaire->course->id]);
+        $this->getDataGenerator()->create_group_member(['groupid' => $othergroup->id, 'userid' => $other->id]);
+        $this->getDataGenerator()->create_group_member(['groupid' => $owngroup->id, 'userid' => $USER->id]);
+
+        $this->assertFalse($questionnaire->can_view_response($otherrid));
+        $this->getDataGenerator()->create_group_member(['groupid' => $othergroup->id, 'userid' => $USER->id]);
+        $this->assertTrue($questionnaire->can_view_response($otherrid));
     }
 
     /**

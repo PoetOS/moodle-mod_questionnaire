@@ -308,7 +308,7 @@ class behat_mod_questionnaire extends behat_base {
      *
      * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)"$/
      * @param string $pagetype One of "popup preview", "survey preview", "feedback sections", "questions",
-     *     "advanced settings", "feedback" or "print".
+     *     "advanced settings", "feedback", "print", "respondents" or "first response".
      * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
      * @param string $shortname The short name of the course the link is in.
      */
@@ -324,7 +324,7 @@ class behat_mod_questionnaire extends behat_base {
      *
      * @When /^I open the "([^"]*)" page of questionnaire "([^"]*)" for course "([^"]*)" and it is refused$/
      * @param string $pagetype One of "popup preview", "survey preview", "feedback sections", "questions",
-     *     "advanced settings", "feedback" or "print".
+     *     "advanced settings", "feedback", "print", "respondents" or "first response".
      * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
      * @param string $shortname The short name of the course the link is in.
      */
@@ -348,7 +348,7 @@ class behat_mod_questionnaire extends behat_base {
      * Get the URL of a questionnaire's preview or print page, as linked from the given course.
      *
      * @param string $pagetype One of "popup preview", "survey preview", "feedback sections", "questions",
-     *     "advanced settings", "feedback" or "print".
+     *     "advanced settings", "feedback", "print", "respondents" or "first response".
      * @param string $name The questionnaire's name. For "survey preview", "A using B" previews A's survey with B's id.
      * @param string $shortname The short name of the course the link is in.
      * @return moodle_url
@@ -378,6 +378,14 @@ class behat_mod_questionnaire extends behat_base {
             case 'print':
                 $params = ['qid' => $this->get_questionnaire_by_name($name)->id, 'rid' => 0, 'courseid' => $courseid, 'sec' => 1];
                 return new moodle_url('/mod/questionnaire/print.php', $params);
+            case 'respondents':
+                $params = ['instance' => $this->get_questionnaire_by_name($name)->id, 'action' => 'vresp', 'byresponse' => 1];
+                return new moodle_url('/mod/questionnaire/report.php', $params);
+            case 'first response':
+                $questionnaireid = $this->get_questionnaire_by_name($name)->id;
+                $rid = $DB->get_field('questionnaire_response', 'MIN(id)', ['questionnaireid' => $questionnaireid]);
+                $params = ['instance' => $questionnaireid, 'action' => 'vresp', 'rid' => $rid, 'individualresponse' => 1];
+                return new moodle_url('/mod/questionnaire/report.php', $params);
             default:
                 throw new coding_exception("Unknown questionnaire page type \"{$pagetype}\".");
         }
