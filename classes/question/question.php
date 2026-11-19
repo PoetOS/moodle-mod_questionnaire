@@ -588,6 +588,10 @@ abstract class question {
                 if (!empty($answer->choiceid) && isset($this->choices[$answer->choiceid]) &&
                     $this->choices[$answer->choiceid]->is_other_choice()) {
                     $answered = !empty($answer->value);
+                    $onlyspaces = preg_match("/^[\s]*$/", $answer->value);
+                    if ($onlyspaces) {
+                        $answered = false;
+                    }
                 } else {
                     $answered = (!empty($answer->choiceid) || !empty($answer->value));
                 }
