@@ -123,6 +123,12 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         $data->closedate = $this->apply_date_offset($data->closedate);
         $data->timemodified = $this->apply_date_offset($data->timemodified);
 
+        // A backup leaves out the survey only when it is another course's public survey, which the copy keeps using. Any other
+        // survey id is not kept: the survey restored with the questionnaire, or an empty one, is used instead.
+        if (!$DB->record_exists('questionnaire_survey', ['id' => $data->sid, 'realm' => 'public'])) {
+            $data->sid = 0;
+        }
+
         // Insert the questionnaire record.
         $newitemid = $DB->insert_record('questionnaire', $data);
         // Immediately after inserting "activity" record, call this.
@@ -463,6 +469,19 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
                 $data->dependchoiceid = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoiceid);
             }
             $DB->insert_record('questionnaire_dependency', $data);
+        }
+
+        // A questionnaire restored without a survey it may use gets an empty one of its own.
+        $questionnaireid = $this->get_new_parentid('questionnaire');
+        $questionnaire = $DB->get_record('questionnaire', ['id' => $questionnaireid], 'id, name, sid');
+        if (empty($questionnaire->sid)) {
+            $survey = (object)[
+                'name' => $questionnaire->name,
+                'courseid' => $this->get_courseid(),
+                'realm' => 'private',
+                'title' => $questionnaire->name,
+            ];
+            $DB->set_field('questionnaire', 'sid', $DB->insert_record('questionnaire_survey', $survey), ['id' => $questionnaireid]);
         }
 
         // Add questionnaire related files, no need to match by itemname (just internally handled context).
