@@ -1,5 +1,20 @@
 Release Notes
 
+Release 4.4.1 (Build - 2026111901)
+Security:
+* Multiple security fixes. Upgrading is strongly recommended.
+
+New Features:
+* Deleted questions now go to a recycle bin, from which they can be restored or permanently deleted.
+
+Improvements:
+* [PR674](https://github.com/PoetOS/moodle-mod_questionnaire/pull/674): Add a group selector to the individual responses report.
+* [PR657](https://github.com/PoetOS/moodle-mod_questionnaire/pull/657): Style the print button, resolves [I656](https://github.com/PoetOS/moodle-mod_questionnaire/issues/656).
+
+Bug Fixes:
+* [PR651](https://github.com/PoetOS/moodle-mod_questionnaire/pull/651): Fixed warnings shown when starting to answer a questionnaire.
+* The individual responses page is now displayed when there are no responses.
+
 Release 4.4.0 (Build - 2025110900)
 New Features:
 * [PR590](https://github.com/PoetOS/moodle-mod_questionnaire/pull/590): Allow responses to be deleted automatically after a specified time. This is disabled by default.
