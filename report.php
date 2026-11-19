@@ -496,6 +496,7 @@ switch ($action) {
         break;
 
     case 'dfs':
+        require_sesskey();
         require_capability('mod/questionnaire:downloadresponses', $context);
         // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
         $name = clean_param($questionnaire->name, PARAM_FILE);

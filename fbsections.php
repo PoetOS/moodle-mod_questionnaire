@@ -60,7 +60,7 @@ if (!isset($SESSION->questionnaire)) {
 
 $questionnaire = new questionnaire($course, $cm, 0, $questionnaire);
 
-if (!$questionnaire->capabilities->editquestions) {
+if (!$questionnaire->can_edit_survey_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 

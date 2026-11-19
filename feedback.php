@@ -61,7 +61,7 @@ $questionnaire->add_page(new \mod_questionnaire\output\feedbackpage());
 
 $SESSION->questionnaire->current_tab = 'feedback';
 
-if (!$questionnaire->capabilities->editquestions) {
+if (!$questionnaire->can_edit_survey_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 

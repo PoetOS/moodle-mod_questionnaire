@@ -67,7 +67,7 @@ $questionnaire->get_delete_questions();
 $questionnaire->add_renderer($PAGE->get_renderer('mod_questionnaire'));
 $questionnaire->add_page(new \mod_questionnaire\output\questionspage());
 
-if (!$questionnaire->capabilities->editquestions) {
+if (!$questionnaire->can_edit_survey_questions()) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
