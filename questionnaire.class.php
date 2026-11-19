@@ -706,6 +706,28 @@ class questionnaire {
     }
 
     /**
+     * True if the user can edit this questionnaire's survey questions and feedback.
+     *
+     * A questionnaire that uses another course's public survey shares it, so only the owning course may change it.
+     *
+     * @return bool
+     */
+    public function can_edit_survey_questions(): bool {
+        return $this->capabilities->editquestions && $this->is_survey_owner();
+    }
+
+    /**
+     * True if the user can edit this questionnaire's survey settings.
+     *
+     * A questionnaire that uses another course's public survey shares it, so only the owning course may change it.
+     *
+     * @return bool
+     */
+    public function can_edit_survey_settings(): bool {
+        return $this->capabilities->manage && $this->is_survey_owner();
+    }
+
+    /**
      * True if the user can view the specified response.
      * @param int $rid
      * @return bool
