@@ -1,0 +1,22 @@
+# camp release workflow: copy to .github/workflows/camp-release.yml in your
+# plugin repository, unchanged. Publishing to camp is then `git tag v1.2.3 &&
+# git push --tags`. Everything happens in the maintained reusable workflow
+# (camp-registry/camp-workflows), so fixes reach you without re-copying.
+# `@v1` follows the maintained workflow (a movable tag, protected against
+# deletion or movement by anyone but the repository's admins). If your
+# policy forbids calling a movable ref with `id-token: write`, pin a commit
+# instead, `release.yml@<full-commit-sha> # v1`, and let Dependabot bump it;
+# you then receive fixes only when bumped. The caller holds no secrets, and
+# the registry rebuilds every release from your public tag before publishing.
+# Docs: https://github.com/camp-registry/camp-docs/blob/main/AUTHORS.md
+name: Publish release to camp
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  camp:
+    uses: camp-registry/camp-workflows/.github/workflows/release.yml@v1

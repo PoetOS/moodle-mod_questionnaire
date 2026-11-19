@@ -1,0 +1,15 @@
+# camp listing manifest: descriptive content for the plugin's page on
+# https://camp-registry.org. camp ingests this file at each tagged release.
+# Schema: https://camp-registry.org/schema/listing.schema.json
+name: Questionnaire
+summary: Build questionnaires and surveys from a variety of question types and report on the responses.
+description: |
+  The questionnaire module allows you to construct questionnaires (surveys)
+  from a variety of question types, for the purpose of gathering data from
+  users. It was originally based on phpESP, an open source survey tool.
+labels:
+  - fully-free
+  - donation-supported
+category: activity
+links:
+  issues: https://github.com/PoetOS/moodle-mod_questionnaire/issues
