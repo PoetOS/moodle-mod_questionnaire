@@ -1,5 +1,9 @@
 Release Notes
 
+Release 4.4.2 (Build - 2026111902)
+Security:
+* Security fix. Upgrading is strongly recommended.
+
 Release 4.4.1 (Build - 2026111901)
 Security:
 * Multiple security fixes. Upgrading is strongly recommended.
