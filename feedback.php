@@ -76,11 +76,7 @@ $currentinfo = file_prepare_draft_area(
     'feedbacknotes',
     $sdata->sid,
     ['subdirs' => true],
-    \mod_questionnaire\local\trusttext::for_edit(
-        $questionnaire->feedback()->notes(),
-        $questionnaire->feedback()->notes_trust(),
-        $questionnaire->context()
-    )
+    $questionnaire->feedback()->notes()
 );
 $sdata->feedbacknotes = ['text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor];
 

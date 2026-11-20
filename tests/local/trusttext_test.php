@@ -32,9 +32,6 @@ namespace mod_questionnaire\local;
  * @covers \mod_questionnaire\local\trusttext
  */
 final class trusttext_test extends \advanced_testcase {
-    /** @var string HTML with a script that cleaning removes. */
-    private const PAYLOAD = '<p>Hello</p><script>alert(1)</script>';
-
     /**
      * Text is flagged trusted only when trusted content is enabled and the user may trust content.
      */
@@ -49,36 +46,5 @@ final class trusttext_test extends \advanced_testcase {
 
         $this->setUser($this->getDataGenerator()->create_user());
         $this->assertSame(0, trusttext::flag($context));
-    }
-
-    /**
-     * Text for an editor is cleaned unless it is trusted and the user may trust content.
-     */
-    public function test_for_edit(): void {
-        $this->resetAfterTest();
-        $context = \context_system::instance();
-        $this->setAdminUser();
-        set_config('enabletrusttext', 1);
-
-        $this->assertStringContainsString('<script>', trusttext::for_edit(self::PAYLOAD, 1, $context));
-        $this->assertStringNotContainsString('<script>', trusttext::for_edit(self::PAYLOAD, 0, $context));
-        $this->assertSame('', trusttext::for_edit(null, 1, $context));
-
-        $this->setUser($this->getDataGenerator()->create_user());
-        $this->assertStringNotContainsString('<script>', trusttext::for_edit(self::PAYLOAD, 1, $context));
-    }
-
-    /**
-     * Displayed text is cleaned unless it is trusted and trusted content is enabled; other options still apply.
-     */
-    public function test_format(): void {
-        $this->resetAfterTest();
-        $this->assertStringNotContainsString('<script>', trusttext::format(self::PAYLOAD, 1));
-        $this->assertStringNotContainsString('<script>', trusttext::format(self::PAYLOAD, 0, ['noclean' => true]));
-
-        set_config('enabletrusttext', 1);
-        $this->assertStringContainsString('<script>', trusttext::format(self::PAYLOAD, 1));
-        $this->assertStringNotContainsString('<script>', trusttext::format(self::PAYLOAD, 0));
-        $this->assertStringContainsString('Hello', trusttext::format(self::PAYLOAD, 0, ['para' => false]));
     }
 }

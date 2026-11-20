@@ -724,7 +724,7 @@ class survey {
                 'question',
                 $qid,
                 ['subdirs' => true],
-                \mod_questionnaire\local\trusttext::for_edit($question->content(), $question->content_trust(), $this->context)
+                $question->content()
             );
             if (isset($question->dependencies)) {
                 foreach ($question->dependencies as $dependencies) {

@@ -305,15 +305,15 @@ abstract class question {
     }
 
     /**
-     * Format HTML written by the question's author (question text, choices, degree labels) for display, by the
-     * question's trust flag.
+     * Format HTML written by the question's author (question text, choices, degree labels) for display, without
+     * cleaning, as authoring questions is a capability that carries RISK_XSS.
      *
      * @param string|null $text
      * @param array $options Other format_text() options.
      * @return string
      */
     public function format_content(?string $text, array $options = []): string {
-        return trusttext::format($text, $this->content_trust(), $options);
+        return format_text((string)$text, FORMAT_HTML, ['noclean' => true] + $options);
     }
 
     /**

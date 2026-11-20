@@ -30,7 +30,6 @@ use html_writer;
 use mod_questionnaire\local\db\feedback_record;
 use mod_questionnaire\local\db\feedback_section_record;
 use mod_questionnaire\local\db\response_record;
-use mod_questionnaire\local\trusttext;
 use mod_questionnaire\questionnaire;
 
 /**
@@ -345,7 +344,7 @@ class feedback {
                 $sectionid
             );
             $feedbackmessages[] = $renderer->box_start();
-            $feedbackmessages[] = trusttext::format($sectionheading, (int)$fbsections[$sectionid]->sectionheadingtrust);
+            $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, ['noclean' => true]);
             $feedbackmessages[] = $renderer->box_end();
 
             if (!empty($feedback->feedbacktext)) {
@@ -357,11 +356,7 @@ class feedback {
                     'feedback',
                     $feedback->id
                 );
-                $feedbacktext = format_text(
-                    $feedbacktext,
-                    $feedback->feedbacktextformat,
-                    ['trusted' => (bool)$feedback->feedbacktexttrust]
-                );
+                $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, ['noclean' => true]);
                 $feedbackmessages[] = $renderer->box_start();
                 $feedbackmessages[] = $feedbacktext;
                 $feedbackmessages[] = $renderer->box_end();
@@ -441,7 +436,6 @@ class feedback {
                         $scorecalculation = [];
                     }
                     $sectionheading = $fbsection->sectionheading;
-                    $sectionheadingtrust = (int)$fbsection->sectionheadingtrust;
                     $imageid = $fbsection->id;
                     $chartlabels[$section] = $fbsection->sectionlabel;
                 }
@@ -489,11 +483,11 @@ class feedback {
                     $imageid
                 );
                 $feedbackmessages[] = $renderer->box_start('reportQuestionTitle');
-                $feedbackmessages[] = trusttext::format($sectionheading, $sectionheadingtrust);
+                $feedbackmessages[] = format_text($sectionheading, FORMAT_HTML, ['noclean' => true]);
                 $feedback = feedback_record::find_for_score(
                     $feedbacksectionid,
                     (float) $scorepercent[$section],
-                    'id,feedbacktext,feedbacktextformat,feedbacktexttrust'
+                    'id,feedbacktext,feedbacktextformat'
                 );
                 $feedbackmessages[] = $renderer->box_end();
                 if (!empty($feedback->feedbacktext)) {
@@ -505,11 +499,7 @@ class feedback {
                         'feedback',
                         $feedback->id
                     );
-                    $feedbacktext = format_text(
-                        $feedbacktext,
-                        $feedback->feedbacktextformat,
-                        ['trusted' => (bool)$feedback->feedbacktexttrust]
-                    );
+                    $feedbacktext = format_text($feedbacktext, $feedback->feedbacktextformat, ['noclean' => true]);
                     $feedbackmessages[] = $renderer->box_start('feedbacktext');
                     $feedbackmessages[] = $feedbacktext;
                     $feedbackmessages[] = $renderer->box_end();
