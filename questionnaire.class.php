@@ -751,6 +751,16 @@ class questionnaire {
                 return false;
             }
 
+            // In separate groups, other users' responses are only visible to members of a shared group.
+            if (($response->userid != $USER->id) && !groups_user_groups_visible($this->course, $response->userid, $this->cm)) {
+                return false;
+            }
+
+            // Another user's complete response also needs the capability to view individual responses.
+            if (($response->userid != $USER->id) && !$this->capabilities->viewsingleresponse) {
+                return false;
+            }
+
             // If you can view all responses always, then you can view it.
             if ($this->capabilities->readallresponseanytime) {
                 return true;
@@ -809,6 +819,22 @@ class questionnaire {
             return $this->can_view_response($rid);
         }
         return $this->can_view_all_responses(null, true) && (!$rid || $this->can_view_response($rid));
+    }
+
+    /**
+     * True if the user can browse individual responses, including the list of respondents.
+     *
+     * Printing a single response the user can view, such as their own, does not need the individual response capability.
+     *
+     * @param string $outputtarget The output target: 'html', 'print' or 'pdf'.
+     * @param int|false $rid The response id, if one is given.
+     * @return bool
+     */
+    public function can_view_individual_responses(string $outputtarget, $rid): bool {
+        if (($outputtarget == 'print') && $rid) {
+            return $this->can_view_response($rid);
+        }
+        return (bool)$this->capabilities->viewsingleresponse;
     }
 
     /**
