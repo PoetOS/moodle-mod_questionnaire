@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\feedback\section;
 
 /**
@@ -185,6 +186,12 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
         if (isset($data->resp_view)) {
             $data->respview = $data->resp_view;
             unset($data->resp_view);
+        }
+
+        // A backup leaves out the survey only when it is another course's public survey, which the copy keeps using. Any other
+        // survey id is not kept: the survey restored with the questionnaire, or an empty one, is used instead.
+        if (!survey_record::count_records(['id' => $data->sid, 'realm' => 'public'])) {
+            $data->sid = 0;
         }
 
         // Insert the questionnaire record.
@@ -732,6 +739,19 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
                 $data->dependchoiceid = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoiceid);
             }
             $DB->insert_record('questionnaire_dependency', $data);
+        }
+
+        // A questionnaire restored without a survey it may use gets an empty one of its own.
+        $questionnaireid = $this->get_new_parentid('questionnaire');
+        $questionnaire = $DB->get_record('questionnaire', ['id' => $questionnaireid], 'id, name, sid');
+        if (empty($questionnaire->sid)) {
+            $survey = survey_record::create_from_sdata((object)[
+                'name' => $questionnaire->name,
+                'courseid' => $this->get_courseid(),
+                'realm' => 'private',
+                'title' => $questionnaire->name,
+            ]);
+            $DB->set_field('questionnaire', 'sid', $survey->get('id'), ['id' => $questionnaireid]);
         }
 
         // Add questionnaire related files, no need to match by itemname (just internally handled context).
