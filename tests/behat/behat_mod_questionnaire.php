@@ -768,6 +768,48 @@ class behat_mod_questionnaire extends behat_base {
     }
 
     /**
+     * Make a questionnaire's survey public and have another questionnaire use it, as when it is added to another course.
+     *
+     * @Given /^questionnaire "([^"]*)" uses the public survey of questionnaire "([^"]*)"$/
+     * @param string $name questionnaire that uses the survey.
+     * @param string $mastername questionnaire that owns the survey.
+     */
+    public function questionnaire_uses_public_survey(string $name, string $mastername): void {
+        global $DB;
+        $master = $this->get_questionnaire_by_name($mastername);
+        $DB->set_field('questionnaire_survey', 'realm', 'public', ['id' => $master->sid]);
+        $DB->set_field('questionnaire', 'sid', $master->sid, ['id' => $this->get_questionnaire_by_name($name)->id]);
+    }
+
+    /**
+     * Move all responses of one questionnaire to another, as if they had been made there.
+     *
+     * @Given /^the responses of questionnaire "([^"]*)" were made in questionnaire "([^"]*)"$/
+     * @param string $fromname
+     * @param string $toname
+     */
+    public function the_responses_were_made_in(string $fromname, string $toname): void {
+        global $DB;
+        $from = $this->get_questionnaire_by_name($fromname);
+        $to = $this->get_questionnaire_by_name($toname);
+        $DB->set_field('questionnaire_response', 'questionnaireid', $to->id, ['questionnaireid' => $from->id]);
+    }
+
+    /**
+     * Give all responses of a questionnaire to a user, as if that user had made them.
+     *
+     * @Given /^the responses of questionnaire "([^"]*)" were made by "([^"]*)"$/
+     * @param string $name questionnaire name.
+     * @param string $username
+     */
+    public function the_responses_were_made_by(string $name, string $username): void {
+        global $DB;
+        $userid = $DB->get_field('user', 'id', ['username' => $username], MUST_EXIST);
+        $questionnaireid = $this->get_questionnaire_by_name($name)->id;
+        $DB->set_field('questionnaire_response', 'userid', $userid, ['questionnaireid' => $questionnaireid]);
+    }
+
+    /**
      * Get a questionnaire by name.
      *
      * @param string $name questionnaire name.

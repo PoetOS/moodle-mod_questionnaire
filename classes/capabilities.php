@@ -16,6 +16,8 @@
 
 namespace mod_questionnaire;
 
+use mod_questionnaire\local\db\questionnaire_record;
+
 /**
  * Permission and eligibility checks for a questionnaire.
  *
@@ -316,6 +318,22 @@ class capabilities {
     }
 
     /**
+     * True if the current user can open the response report for the given action, output target and response.
+     *
+     * @param string $action The report action.
+     * @param string $outputtarget The output target: 'html', 'print' or 'pdf'.
+     * @param int $rid The response id, or 0 if none is given.
+     * @return bool
+     */
+    public function can_open_report(string $action, string $outputtarget, int $rid): bool {
+        // A single response the user can view, such as their own, can always be printed.
+        if (($action == 'vresp') && ($outputtarget == 'print') && $rid) {
+            return $this->can_view_response($rid);
+        }
+        return $this->can_view_all_responses(null, true) && (!$rid || $this->can_view_response($rid));
+    }
+
+    /**
      * True if the current user can view all responses (checking group membership and response counts).
      *
      * @param int|null $usernumresp Number of responses the user has made; null to calculate.
@@ -393,8 +411,15 @@ class capabilities {
         if (!empty($rid)) {
             $response = $DB->get_record('questionnaire_response', ['id' => $rid]);
 
-            // Response not found or belongs to a different questionnaire.
-            if (empty($response) || $response->questionnaireid != $this->questionnaire->id()) {
+            // Response not found or belongs to a different questionnaire. A public survey's owning instance may also view
+            // the responses of the instances that use its survey.
+            if (empty($response)) {
+                return false;
+            }
+            $sid = $this->questionnaire->surveyid();
+            $sharedsurvey = $this->questionnaire->survey_is_public_master() &&
+                questionnaire_record::count_records(['id' => $response->questionnaireid, 'sid' => $sid]);
+            if (($response->questionnaireid != $this->questionnaire->id()) && !$sharedsurvey) {
                 return false;
             }
 
