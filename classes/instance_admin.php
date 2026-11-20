@@ -18,6 +18,7 @@ namespace mod_questionnaire;
 
 use mod_questionnaire\local\db\dependency_record;
 use mod_questionnaire\local\db\questionnaire_record;
+use mod_questionnaire\local\db\response_record;
 use mod_questionnaire\local\db\survey_record;
 use mod_questionnaire\local\survey\survey;
 use stdClass;
@@ -133,6 +134,11 @@ class instance_admin {
             $surveyrecord->update();
         }
 
+        // An anonymous questionnaire that has responses stays anonymous.
+        if (self::respondent_type_locked($questionnaire->instance)) {
+            $questionnaire->respondenttype = 'anonymous';
+        }
+
         $questionnaire->id = $questionnaire->instance;
         $questionnaire->resume = ($questionnaire->resume == '1') ? 1 : 0;
 
@@ -161,6 +167,23 @@ class instance_admin {
         );
 
         return true;
+    }
+
+    /**
+     * Whether the questionnaire's respondent type can no longer be changed.
+     *
+     * An anonymous questionnaire stays anonymous once anyone has responded to it, whether
+     * the response is complete or only saved.
+     *
+     * @param int $instanceid Questionnaire instance id.
+     * @return bool
+     */
+    public static function respondent_type_locked(int $instanceid): bool {
+        $record = questionnaire_record::get_record(['id' => $instanceid]);
+        if (!$record || ($record->get('respondenttype') != 'anonymous')) {
+            return false;
+        }
+        return response_record::count_records(['questionnaireid' => $instanceid]) > 0;
     }
 
     /**

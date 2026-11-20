@@ -196,7 +196,6 @@ class mod_questionnaire_mod_form extends moodleform_mod {
      * @param array $defaultvalues
      */
     public function data_preprocessing(&$defaultvalues) {
-        global $DB;
         if (empty($defaultvalues['opendate'])) {
             $defaultvalues['useopendate'] = 0;
         } else {
@@ -209,15 +208,11 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         }
         // Prevent questionnaire set to "anonymous" to be reverted to "full name".
         $defaultvalues['cannotchangerespondenttype'] = 0;
-        if (!empty($defaultvalues['respondenttype']) && $defaultvalues['respondenttype'] == "anonymous") {
-            // If this questionnaire has responses.
-            $numresp = $DB->count_records(
-                'questionnaire_response',
-                ['questionnaireid' => $defaultvalues['instance'], 'complete' => 'y']
-            );
-            if ($numresp) {
-                $defaultvalues['cannotchangerespondenttype'] = 1;
-            }
+        if (
+            !empty($defaultvalues['instance']) &&
+            \mod_questionnaire\instance_admin::respondent_type_locked($defaultvalues['instance'])
+        ) {
+            $defaultvalues['cannotchangerespondenttype'] = 1;
         }
     }
 

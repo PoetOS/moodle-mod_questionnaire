@@ -125,33 +125,74 @@ final class instance_admin_test extends \advanced_testcase {
             ->get_plugin_generator('mod_questionnaire')
             ->create_instance(['course' => $course->id, 'name' => 'Original']);
 
-        $data = new \stdClass();
-        $data->instance = $questionnaire->id();
-        $data->course = $course->id;
-        $data->coursemodule = $questionnaire->coursemodule()->id;
-        $data->sid = $questionnaire->surveyid();
-        $data->realm = 'private';
+        $data = $this->build_update_formdata($questionnaire);
         $data->name = 'Renamed';
-        $data->intro = '';
-        $data->introformat = FORMAT_HTML;
-        $data->qtype = 0;
-        $data->respondenttype = 'fullname';
-        $data->respeligible = 'all';
-        $data->respview = 0;
-        $data->notifications = 0;
-        $data->opendate = 0;
-        $data->closedate = 0;
-        $data->resume = 0;
-        $data->navigate = 0;
-        $data->grade = 0;
-        $data->completionsubmit = 0;
-        $data->autonum = 3;
-        $data->progressbar = 0;
-        $data->removeafter = 0;
 
         $this->assertTrue(instance_admin::update_instance($data));
 
         $this->assertSame('Renamed', $DB->get_field('questionnaire', 'name', ['id' => $questionnaire->id()]));
+    }
+
+    /**
+     * respondent_type_locked() is true only for an anonymous questionnaire that has a response.
+     */
+    public function test_respondent_type_locked(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $anonymous = $this->create_questionnaire_with_respondent_type('anonymous');
+        $this->assertFalse(instance_admin::respondent_type_locked($anonymous->id()));
+
+        $this->add_response($anonymous->id(), 'n');
+        $this->assertTrue(instance_admin::respondent_type_locked($anonymous->id()));
+
+        $complete = $this->create_questionnaire_with_respondent_type('anonymous');
+        $this->add_response($complete->id(), 'y');
+        $this->assertTrue(instance_admin::respondent_type_locked($complete->id()));
+
+        $fullname = $this->create_questionnaire_with_respondent_type('fullname');
+        $this->add_response($fullname->id(), 'y');
+        $this->assertFalse(instance_admin::respondent_type_locked($fullname->id()));
+
+        $this->assertFalse(instance_admin::respondent_type_locked(0));
+    }
+
+    /**
+     * update_instance() keeps an anonymous questionnaire with responses anonymous.
+     */
+    public function test_update_instance_keeps_locked_questionnaire_anonymous(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $questionnaire = $this->create_questionnaire_with_respondent_type('anonymous');
+        $this->add_response($questionnaire->id(), 'n');
+
+        $data = $this->build_update_formdata($questionnaire);
+        $data->respondenttype = 'fullname';
+        $this->assertTrue(instance_admin::update_instance($data));
+
+        $this->assertSame('anonymous', $DB->get_field('questionnaire', 'respondenttype', ['id' => $questionnaire->id()]));
+    }
+
+    /**
+     * update_instance() changes the respondent type either way while there are no anonymous responses.
+     */
+    public function test_update_instance_changes_unlocked_respondent_type(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $questionnaire = $this->create_questionnaire_with_respondent_type('anonymous');
+        $data = $this->build_update_formdata($questionnaire);
+        $data->respondenttype = 'fullname';
+        $this->assertTrue(instance_admin::update_instance($data));
+        $this->assertSame('fullname', $DB->get_field('questionnaire', 'respondenttype', ['id' => $questionnaire->id()]));
+
+        $this->add_response($questionnaire->id(), 'y');
+        $data->respondenttype = 'anonymous';
+        $this->assertTrue(instance_admin::update_instance($data));
+        $this->assertSame('anonymous', $DB->get_field('questionnaire', 'respondenttype', ['id' => $questionnaire->id()]));
     }
 
     /**
@@ -307,5 +348,68 @@ final class instance_admin_test extends \advanced_testcase {
             'action' => GRADE_HISTORY_DELETE,
             'source' => 'reset',
         ]));
+    }
+
+    /**
+     * Create a questionnaire in a new course with the given respondent type.
+     *
+     * @param string $respondenttype 'fullname' or 'anonymous'.
+     * @return questionnaire
+     */
+    private function create_questionnaire_with_respondent_type(string $respondenttype): questionnaire {
+        $course = $this->getDataGenerator()->create_course();
+        return $this->getDataGenerator()
+            ->get_plugin_generator('mod_questionnaire')
+            ->create_instance(['course' => $course->id, 'respondenttype' => $respondenttype]);
+    }
+
+    /**
+     * Add a response to a questionnaire.
+     *
+     * @param int $questionnaireid
+     * @param string $complete 'y' for a submitted response, 'n' for a saved one.
+     */
+    private function add_response(int $questionnaireid, string $complete): void {
+        global $DB;
+        $DB->insert_record('questionnaire_response', (object)[
+            'questionnaireid' => $questionnaireid,
+            'userid' => $this->getDataGenerator()->create_user()->id,
+            'submitted' => time(),
+            'complete' => $complete,
+            'grade' => 0,
+        ]);
+    }
+
+    /**
+     * Build the formdata stdClass that mod_form normally produces for update.
+     *
+     * @param questionnaire $questionnaire
+     * @return \stdClass
+     */
+    private function build_update_formdata(questionnaire $questionnaire): \stdClass {
+        $data = new \stdClass();
+        $data->instance = $questionnaire->id();
+        $data->course = $questionnaire->course()->id;
+        $data->coursemodule = $questionnaire->coursemodule()->id;
+        $data->sid = $questionnaire->surveyid();
+        $data->realm = 'private';
+        $data->name = $questionnaire->name();
+        $data->intro = '';
+        $data->introformat = FORMAT_HTML;
+        $data->qtype = 0;
+        $data->respondenttype = 'fullname';
+        $data->respeligible = 'all';
+        $data->respview = 0;
+        $data->notifications = 0;
+        $data->opendate = 0;
+        $data->closedate = 0;
+        $data->resume = 0;
+        $data->navigate = 0;
+        $data->grade = 0;
+        $data->completionsubmit = 0;
+        $data->autonum = 3;
+        $data->progressbar = 0;
+        $data->removeafter = 0;
+        return $data;
     }
 }
