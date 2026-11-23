@@ -101,7 +101,8 @@ class radio extends question {
                 $radio->horizontal = $horizontal;
             }
 
-            if (!$choice->is_other_choice()) { // This is a normal radio button.
+            if (!$choice->is_other_choice()) {
+                // This is a normal radio button.
                 $htmlid = self::next_choice_id();
 
                 $radio->name = 'q' . $this->id();
@@ -121,7 +122,8 @@ class radio extends question {
                 if (!empty($this->qlegend)) {
                     $radio->alabel = strip_tags("{$this->qlegend} {$radio->label}");
                 }
-            } else {             // Radio button with associated !other text field.
+            } else {
+                // Radio button with associated !other text field.
                 $othertext = $choice->other_choice_display();
                 $cname = choice::id_other_choice_name($id);
                 $odata = isset($response->answers[$this->id()][$id]) ? $response->answers[$this->id()][$id]->value : '';

@@ -395,7 +395,8 @@ class rate extends question {
                     }
                     $cols[] = $cellobj;
                 }
-                if ($this->has_na_column()) { // N/A column.
+                if ($this->has_na_column()) {
+                    // N/A column.
                     $cellobj = new \stdClass();
                     if ($checkedna) {
                         $cellobj->checked = 1;

@@ -22,6 +22,7 @@
  * @author     Mike Churchward
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_questionnaire;
 
 use mod_questionnaire\local\survey\survey;

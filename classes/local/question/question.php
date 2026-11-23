@@ -24,6 +24,7 @@
  */
 
 namespace mod_questionnaire\local\question;
+
 use mod_questionnaire\edit_question_form;
 use mod_questionnaire\local\db\question_record;
 use mod_questionnaire\local\db\question_type_record;
@@ -714,7 +715,8 @@ abstract class question {
                 $contents = self::parse_choice_content($choice->content);
                 if (!empty($contents->modname)) {
                     $choice->content = $contents->modname;
-                } else if (!empty($contents->title)) { // Must be an image; use its title for the dropdown list.
+                } else if (!empty($contents->title)) {
+                    // Must be an image; use its title for the dropdown list.
                     $choice->content = format_string($contents->title);
                 } else {
                     $choice->content = format_string($contents->text);
@@ -1921,7 +1923,8 @@ abstract class question {
                     if ($r) {
                         $newscore = $matches[1][0];
                         $choicerecord->value = $newscore;
-                    } else {     // No score value for this choice.
+                    } else {
+                        // No score value for this choice.
                         $choicerecord->value = null;
                     }
                     $this->update_choice($choicerecord);

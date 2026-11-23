@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\local\question;
+
 use form_filemanager;
 use mod_questionnaire\local\response\response;
 use moodle_url;
@@ -117,7 +118,8 @@ class file extends question {
         ) {
             $answer = reset($responsedata->answers[$this->id()]);
             $answered = ((int)$answer->value > 0);
-        } else if (isset($responsedata->{'q' . $this->id()})) { // If $responsedata is webform data, check that it is not empty.
+        } else if (isset($responsedata->{'q' . $this->id()})) {
+            // If $responsedata is webform data, check that it is not empty.
             $draftitemid = (int)$responsedata->{'q' . $this->id()};
             if ($draftitemid > 0) {
                 $info = file_get_draft_area_info($draftitemid);
