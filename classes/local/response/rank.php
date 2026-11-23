@@ -415,7 +415,8 @@ class rank extends responsetype {
                     if (isset($rows[$ccontent]->averagevalue)) {
                         $avgvalue = $rows[$ccontent]->averagevalue;
                         $osgood = false;
-                        if ($this->question->osgood_rate_scale()) { // Osgood's semantic differential.
+                        if ($this->question->osgood_rate_scale()) {
+                            // Osgood's semantic differential.
                             $osgood = true;
                         }
                         if ($stravgvalue == '' && !$osgood) {
@@ -469,7 +470,8 @@ class rank extends responsetype {
             $row = (array)$row;
             $newrow = [];
             foreach ($row as $key => $val) {
-                if ($key != 'content') { // No need to keep question text - ony keep choice text and rank.
+                if ($key != 'content') {
+                    // No need to keep question text - ony keep choice text and rank.
                     if ($key == 'ccontent') {
                         if ($osgood) {
                             [$contentleft, $contentright] = array_merge(preg_split('/[|]/', $val), [' ']);

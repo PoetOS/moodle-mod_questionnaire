@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\local\question;
+
 use mod_questionnaire\edit_question_form;
 use mod_questionnaire\questionnaire;
 

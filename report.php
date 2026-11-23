@@ -66,7 +66,8 @@ require_course_login($course, true, $cm);
 $renderer = $PAGE->get_renderer('mod_questionnaire');
 if ($outputtarget == 'pdf') {
     $page = ($action == 'vresp') ? page::response_pdf() : page::report_pdf();
-} else { // Default to HTML.
+} else {
+    // Default to HTML.
     $page = page::report();
 }
 

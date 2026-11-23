@@ -913,9 +913,9 @@ class behat_mod_questionnaire extends behat_base {
         $file = $this->find_file('repo_upload_file');
 
         // Attaching specified file to the node.
-        // Replace 'admin/' if it is in start of path with $CFG->admin .
+        // Make a path starting with 'admin/' absolute.
         if (substr($filepath, 0, 6) === 'admin/') {
-            $filepath = $CFG->dirroot . DIRECTORY_SEPARATOR . $CFG->admin .
+            $filepath = $CFG->dirroot . DIRECTORY_SEPARATOR . 'admin' .
                 DIRECTORY_SEPARATOR . substr($filepath, 6);
         }
         $filepath = str_replace('/', DIRECTORY_SEPARATOR, $filepath);

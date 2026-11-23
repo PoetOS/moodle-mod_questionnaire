@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_questionnaire\local\question;
+
 use html_writer;
 use mod_questionnaire\local\question\choice;
 use mod_questionnaire\local\response\response;

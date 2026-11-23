@@ -236,7 +236,7 @@ final class section_test extends \advanced_testcase {
         $section->set_new_scorecalculation([10 => 1, 11 => 2]);
 
         $stored = $DB->get_field('questionnaire_fb_sections', 'scorecalculation', ['id' => $section->id]);
-        $this->assertSame([10 => 1, 11 => 2], unserialize($stored));
+        $this->assertSame([10 => 1, 11 => 2], unserialize_array($stored));
         $this->assertSame([10 => 1, 11 => 2], $section->scorecalculation);
     }
 }
