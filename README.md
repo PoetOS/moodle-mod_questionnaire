@@ -13,20 +13,24 @@ branches. Use the latest STABLE branch for development or installation.
 
 Submit a pull request against the current stable branch to provide fixes, improvements or features. Make sure the change is defined well in the pull request or associated issue. Pull requests should contain changes for the issue at hand only. Any other changes must be in a separate pull request.
 
-**The current stable branch is MOODLE_500_STABLE, and supports Moodle 5.0 through 5.1.**
+**The current stable branch is MOODLE_503_STABLE, and supports Moodle 5.0 through 5.3.**
 
-Use the MOODLE_404_STABLE branch for Moodle 4.4 through 4.5.
+The MOODLE_500_STABLE branch also supports Moodle 5.0 through 5.1, but is no longer developed. Use MOODLE_503_STABLE instead.
+
+Use the MOODLE_404_STABLE branch for Moodle 4.4 through 4.5. It only receives security fixes.
 
 Use the MOODLE_401_STABLE branch for Moodle 4.1 through 4.3.
 
 ## To Install
 
-1. Load the questionnaire module directory into your "mod" subdirectory.
+1. Load the questionnaire module directory into your "mod" subdirectory, as "mod/questionnaire".
+   From Moodle 5.1, this is "public/mod/questionnaire".
 2. Visit your admin page to create all of the necessary data tables.
 
 ## To Upgrade
 
-1. Copy all of the files into your 'mod/questionnaire' directory.
+1. Copy all of the files into your 'mod/questionnaire' directory ('public/mod/questionnaire' from Moodle 5.1).
+   When upgrading from a release before 5.3.0, delete the old questionnaire files first, as many files were removed or moved.
 2. Visit your admin page. The database will be updated.
 
 Please read the CHANGES.md file for more info about successive changes

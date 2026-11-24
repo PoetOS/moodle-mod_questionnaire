@@ -1,5 +1,23 @@
 # Release Notes #
 
+## Release 5.3.2 (Build - 2026112301) ##
+  * Security and bug fix release for Moodle 5.3 forward.
+  * Supports back to Moodle 5.0.
+  * All sites should upgrade to this release in order to guarantee security.
+
+  ### Security fixes: ###
+  * Security fixes. Upgrading is strongly recommended.
+
+  ### Bug fixes: ###
+  * Staff-authored HTML (such as embedded media) is no longer stripped when it is shown or edited, a regression in 5.3.1.
+  * A public questionnaire's owner can view responses from the courses using it again.
+  * Users can print an individual response they are allowed to view, including from courses using a public questionnaire.
+
+  ### Maintenance: ###
+  * Tagged releases are published to the camp registry.
+  * Code checker issues from the latest Moodle coding standard are fixed.
+
+
 ## Release 5.3.1 (Build - 2026111201) ##
   * Security and bug fix release for Moodle 5.3 forward.
   * Supports back to Moodle 5.0 (now requires the 5.0 release, 2025041400, or later).
