@@ -63,3 +63,40 @@ function questionnaire_upgrade_trust_existing_content(): void {
         }
     }
 }
+
+/**
+ * Delete answer rows saved without a response, along with any files uploaded with them.
+ *
+ * Such rows cannot be traced back to the user who gave them, so they are removed.
+ */
+function questionnaire_upgrade_delete_unowned_answers(): void {
+    global $DB;
+
+    // Each file answer records the stored file it saved; only delete a file that points back at that answer.
+    $fs = get_file_storage();
+    $rows = $DB->get_recordset('questionnaire_response_file', ['responseid' => 0], '', 'id, fileid');
+    foreach ($rows as $row) {
+        $file = empty($row->fileid) ? false : $fs->get_file_by_id($row->fileid);
+        if (
+            $file && ($file->get_component() === 'mod_questionnaire') &&
+            ($file->get_filearea() === 'response_file') && ((int)$file->get_itemid() === (int)$row->id)
+        ) {
+            $fs->delete_area_files($file->get_contextid(), 'mod_questionnaire', 'response_file', $row->id);
+        }
+    }
+    $rows->close();
+
+    $tables = [
+        'questionnaire_response_bool',
+        'questionnaire_response_date',
+        'questionnaire_resp_multiple',
+        'questionnaire_response_other',
+        'questionnaire_response_rank',
+        'questionnaire_resp_single',
+        'questionnaire_response_text',
+        'questionnaire_response_file',
+    ];
+    foreach ($tables as $table) {
+        $DB->delete_records($table, ['responseid' => 0]);
+    }
+}

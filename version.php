@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2026113102;
+$plugin->version   = 2026113102.01;
 $plugin->requires  = 2025041400; // Moodle 5.0 and up.
 $plugin->supported = [500, 503]; // Moodle 5.0 to 5.3.
 
