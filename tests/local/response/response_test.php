@@ -260,4 +260,39 @@ final class response_test extends advanced_testcase {
 
         $this->assertTrue($r->is_complete());
     }
+
+    // Tests for response::set_id().
+
+    /**
+     * Test that set_id() points an unsaved response at the given header id.
+     */
+    public function test_set_id_updates_id_and_rid(): void {
+        $r = response::create_from_data([]);
+        $this->assertSame(0, $r->id());
+
+        $r->set_id(123);
+
+        $this->assertSame(123, $r->id());
+        $this->assertSame(123, $r->rid);
+    }
+
+    // Tests for response::add_questions_answers().
+
+    /**
+     * Test that a response without an id never picks up answer rows that have no response id.
+     */
+    public function test_add_questions_answers_empty_without_id(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        $DB->insert_record('questionnaire_response_text', (object)[
+            'responseid' => 0,
+            'questionid' => 55,
+            'response' => 'Someone else',
+        ]);
+
+        $r = response::create_from_data([]);
+
+        $this->assertSame([], $r->answers);
+    }
 }

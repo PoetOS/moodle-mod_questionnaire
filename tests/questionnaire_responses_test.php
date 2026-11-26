@@ -884,4 +884,44 @@ final class questionnaire_responses_test extends \advanced_testcase {
         ]);
         $this->assertNull($questionnaire->responses()->first_incomplete_section($rid));
     }
+
+    // Tests for response_insert().
+
+    /**
+     * An unsaved response object built from app data is saved under the newly created response header.
+     *
+     * @covers \mod_questionnaire\local\response\questionnaire_responses::response_insert
+     */
+    public function test_response_insert_saves_app_response_under_new_header(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_questionnaire');
+        $questionnaire = $generator->create_test_questionnaire(
+            $this->getDataGenerator()->create_course(),
+            QUESTEXT,
+            ['content' => 'Enter some text']
+        );
+        $questions = $questionnaire->questions();
+        $question = reset($questions);
+        $student = $this->getDataGenerator()->create_user();
+        $this->setUser($student);
+
+        $responses = $questionnaire->responses();
+        $response = $responses->build_response_from_appdata(
+            (object)['response_' . QUESTEXT . '_' . $question->id() => 'Hello'],
+            1
+        );
+        $response->sec = 1;
+        $rid = $responses->response_insert($response, (int)$student->id);
+
+        $this->assertGreaterThan(0, $rid);
+        $this->assertSame($rid, $response->id());
+        $this->assertSame('Hello', $DB->get_field(
+            'questionnaire_response_text',
+            'response',
+            ['responseid' => $rid, 'questionid' => $question->id()]
+        ));
+        $this->assertFalse($DB->record_exists('questionnaire_response_text', ['responseid' => 0]));
+    }
 }

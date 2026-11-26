@@ -411,6 +411,10 @@ class questionnaire_responses {
             );
             $response->touch();
         }
+        if ($responsedata instanceof \mod_questionnaire\local\response\response) {
+            // The answers are written under the response object's own id, so keep it in step with rid.
+            $responsedata->set_id((int)$responsedata->rid);
+        }
         if ($resume) {
             $context = \context_module::instance($this->questionnaire->coursemodule()->id);
             $anonymous = $this->questionnaire->is_anonymous();

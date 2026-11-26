@@ -279,4 +279,62 @@ final class save_mobile_data_test extends \advanced_testcase {
         $this->assertSame(1, $result['nextpagenum']);
         $this->assertSame('n', $DB->get_field('questionnaire_response', 'complete', ['id' => $rid]));
     }
+
+    // Tests for answers saved on a new response.
+
+    /**
+     * Answers from a plain save with no response id are stored under the newly created response.
+     *
+     * @covers \mod_questionnaire\questionnaire::save_mobile_data
+     */
+    public function test_plain_save_stores_answers_under_new_response(): void {
+        global $DB;
+        [$questionnaire, $userid] = $this->make_fixture();
+        $this->setUser($userid);
+        $questions = $questionnaire->questions();
+        $q1 = reset($questions);
+
+        $questionnaire->save_mobile_data($userid, 1, 0, 0, 0, '', ['response_' . QUESTEXT . '_' . $q1->id() => 'Hello']);
+
+        $rid = (int)$DB->get_field(
+            'questionnaire_response',
+            'id',
+            ['questionnaireid' => $questionnaire->id(), 'userid' => $userid],
+            MUST_EXIST
+        );
+        $this->assertSame('Hello', $DB->get_field(
+            'questionnaire_response_text',
+            'response',
+            ['responseid' => $rid, 'questionid' => $q1->id()]
+        ));
+        $this->assertFalse($DB->record_exists('questionnaire_response_text', ['responseid' => 0]));
+    }
+
+    /**
+     * Answers from a nextpage save with no response id are stored under the newly created response.
+     *
+     * @covers \mod_questionnaire\questionnaire::save_mobile_data
+     */
+    public function test_nextpage_stores_answers_under_new_response(): void {
+        global $DB;
+        [$questionnaire, $userid] = $this->make_fixture(true);
+        $this->setUser($userid);
+        $questions = $questionnaire->questions_by_section_all()[1];
+        $q1 = reset($questions);
+
+        $questionnaire->save_mobile_data($userid, 1, 0, 0, 0, 'nextpage', ['response_' . QUESTEXT . '_' . $q1->id() => 'Hello']);
+
+        $rid = (int)$DB->get_field(
+            'questionnaire_response',
+            'id',
+            ['questionnaireid' => $questionnaire->id(), 'userid' => $userid],
+            MUST_EXIST
+        );
+        $this->assertSame('Hello', $DB->get_field(
+            'questionnaire_response_text',
+            'response',
+            ['responseid' => $rid, 'questionid' => $q1->id()]
+        ));
+        $this->assertFalse($DB->record_exists('questionnaire_response_text', ['responseid' => 0]));
+    }
 }
