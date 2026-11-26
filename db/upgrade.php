@@ -1507,5 +1507,11 @@ function xmldb_questionnaire_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2026113100.03, 'questionnaire');
     }
 
+    if ($oldversion < 2026113102.01) {
+        // Remove answers saved without a response; they cannot be traced back to anyone.
+        questionnaire_upgrade_delete_unowned_answers();
+        upgrade_mod_savepoint(true, 2026113102.01, 'questionnaire');
+    }
+
     return true;
 }

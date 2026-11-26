@@ -91,4 +91,70 @@ final class upgradelib_test extends \advanced_testcase {
             }
         }
     }
+
+    /**
+     * Answers and uploaded files without a response are deleted; answers that belong to a response are kept.
+     *
+     * @covers ::questionnaire_upgrade_delete_unowned_answers
+     */
+    public function test_delete_unowned_answers(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $context = \context_system::instance();
+        $othercontext = \context_user::instance(get_admin()->id);
+        $fs = get_file_storage();
+
+        $answers = [];
+        foreach ([0, 77] as $responseid) {
+            $answers[$responseid] = [
+                'text' => $DB->insert_record('questionnaire_response_text', (object)[
+                    'responseid' => $responseid,
+                    'questionid' => 5,
+                    'response' => 'Answer',
+                ]),
+                'bool' => $DB->insert_record('questionnaire_response_bool', (object)[
+                    'responseid' => $responseid,
+                    'questionid' => 5,
+                    'choiceid' => 'y',
+                ]),
+                'file' => $DB->insert_record('questionnaire_response_file', (object)[
+                    'responseid' => $responseid,
+                    'questionid' => 5,
+                    'fileid' => 0,
+                ]),
+            ];
+            $file = $fs->create_file_from_string([
+                'contextid' => $context->id,
+                'component' => 'mod_questionnaire',
+                'filearea' => 'response_file',
+                'itemid' => $answers[$responseid]['file'],
+                'filepath' => '/',
+                'filename' => 'upload.txt',
+            ], 'Uploaded');
+            $DB->set_field('questionnaire_response_file', 'fileid', $file->get_id(), ['id' => $answers[$responseid]['file']]);
+        }
+
+        // A file elsewhere with the same item id, which the unowned answer does not point at, must be kept.
+        $fs->create_file_from_string([
+            'contextid' => $othercontext->id,
+            'component' => 'mod_questionnaire',
+            'filearea' => 'response_file',
+            'itemid' => $answers[0]['file'],
+            'filepath' => '/',
+            'filename' => 'other.txt',
+        ], 'Other');
+
+        questionnaire_upgrade_delete_unowned_answers();
+
+        $this->assertFalse($DB->record_exists('questionnaire_response_text', ['responseid' => 0]));
+        $this->assertFalse($DB->record_exists('questionnaire_response_bool', ['responseid' => 0]));
+        $this->assertFalse($DB->record_exists('questionnaire_response_file', ['responseid' => 0]));
+        $this->assertTrue($fs->is_area_empty($context->id, 'mod_questionnaire', 'response_file', $answers[0]['file']));
+        $this->assertFalse($fs->is_area_empty($othercontext->id, 'mod_questionnaire', 'response_file', $answers[0]['file']));
+
+        $this->assertTrue($DB->record_exists('questionnaire_response_text', ['id' => $answers[77]['text']]));
+        $this->assertTrue($DB->record_exists('questionnaire_response_bool', ['id' => $answers[77]['bool']]));
+        $this->assertTrue($DB->record_exists('questionnaire_response_file', ['id' => $answers[77]['file']]));
+        $this->assertFalse($fs->is_area_empty($context->id, 'mod_questionnaire', 'response_file', $answers[77]['file']));
+    }
 }

@@ -255,6 +255,20 @@ class response {
     // Operations.
 
     /**
+     * Point this in-memory response at a persisted response header.
+     *
+     * Used when an unsaved response built from submitted data is saved against a header created later,
+     * so that its answers are written under that header's id.
+     *
+     * @param int $id
+     * @return void
+     */
+    public function set_id(int $id): void {
+        $this->record->from_record((object)['id' => $id]);
+        $this->rid = $id;
+    }
+
+    /**
      * Update the submitted timestamp on this response header.
      *
      * @return void
@@ -284,6 +298,9 @@ class response {
      */
     public function add_questions_answers(): void {
         $this->answers = [];
+        if ($this->id() <= 0) {
+            return;
+        }
         $this->answers += \mod_questionnaire\local\response\multiple::response_answers_by_question($this->id());
         $this->answers += \mod_questionnaire\local\response\single::response_answers_by_question($this->id());
         $this->answers += \mod_questionnaire\local\response\rank::response_answers_by_question($this->id());
